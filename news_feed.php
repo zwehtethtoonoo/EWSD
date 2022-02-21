@@ -43,6 +43,54 @@ if (!isset($_SESSION['staffid']))
     $staffid="";
  }
 }
+
+
+
+if (isset($_POST['BtnPost'])) {
+        $ideaid=$_POST['ideaid'];
+        $txttextarea=$_POST['txttextarea'];
+        $rdovisibility=$_POST['rdovisibility'];
+        $timestamp=date('Y-m-d H:i:s');
+        $image1=$_FILES['filename1']['name'];
+                
+         $folder="images/ideas/";
+        if ($image1) {
+            $filename1=$folder.'_'.$image1;
+            $copied=copy($_FILES['filename1']['tmp_name'],$filename1);
+             if (!$copied)  {
+                    exit("Problem occured and cannot upload image.");
+            }
+        }
+    $staffid=$_SESSION['staffid'];
+
+    // For staff name
+    // 
+    // $search_sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
+    // $query=mysqli_query($connection,$search_sql);
+    $cate=$roww['categoryid'];
+
+
+    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
+    $extension = pathinfo($path, PATHINFO_EXTENSION);
+    //Insert idea into table
+
+    $insert= "INSERT INTO tblidea (ideaid,idea_detail,staffid,categoryid,idea_date,file,filetype,visibility) VALUES ('$ideaid','$txttextarea','$staffid','$cate','$timestamp','$filename1','$extension','$rdovisibility')  ";
+    $result=mysqli_query($connection,$insert);
+
+    if($result) //True
+    {
+        echo "<script>window.alert('Idea Successfully added!')</script>";
+        echo "<script>window.location='news_feed.php'</script>";
+    }
+    else
+    {
+        echo "<p>Something went wrong in idea entry" . mysqli_error($connection) . "</p>";
+    }
+        
+
+}
+
+
  ?>
 
 </head>
@@ -336,54 +384,13 @@ if (!isset($_SESSION['staffid']))
                                                        <?php  
                                             }
 
-if (isset($_POST['BtnPost'])) {
-        $txttextarea=$_POST['txttextarea'];
-        $rdovisibility=$_POST['rdovisibility'];
-        $time=$_POST[getdate(timestamp)];
-        $image1=$_FILES['filename1']['name'];
-                
-         $folder="images/ideas/";
-        if ($image1) {
-            $filename1=$folder.'_'.$image1;
-            $copied=copy($_FILES['filename1']['tmp_name'],$filename1);
-             if (!$copied)  {
-                    exit("Problem occured and cannot upload image.");
-            }
-        }
-    $staffid=$_SESSION['staffid'];
-
-    // For staff name
-    // 
-    // $search_sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
-    // $query=mysqli_query($connection,$search_sql);
-    // $row=mysqli_fetch_array($query);
-    // $staffname=$row['name'];
-
-    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
-    $extension = pathinfo($path, PATHINFO_EXTENSION);
-    //Insert idea into table
-
-    $insert= "INSERT INTO tblidea (idea_detail,staffid,categoryid,date,file,filetype,visibility) VALUES ('$txttextarea','$staffid','opCategory','$time','$filename1','$extension','rdovisibility') ";
-    $result=mysqli_query($connection,$insert);
-
-    if($result) //True
-    {
-        echo "<script>window.alert('Idea Successfully added!')</script>";
-        echo "<script>window.location='news_feed.php'</script>";
-    }
-    else
-    {
-        echo "<p>Something went wrong in idea entry" . mysqli_error($connection) . "</p>";
-    }
-        
-
-            }
 
 
                                                 ?>
                                                          </select> 
                                         </div>
                                                     </div>
+                                     <input type="hidden" name="ideaid" value="<?php echo AutoID('tblidea','ideaid','Idea-',5);?>">
                                                     <div class="post-input">
                                                         <textarea name="txttextarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please share any idea you have...." required></textarea> 
  <style type="text/css" scoped>
