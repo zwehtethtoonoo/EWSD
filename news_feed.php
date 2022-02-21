@@ -31,6 +31,7 @@ if (!isset($_SESSION['staffid']))
     $query=mysqli_query($connection,$sql);
     $count=mysqli_num_rows($query);
     $row=mysqli_fetch_array($query);
+
     if ($count < 1) 
     {
         echo "<script>window.alert('ERROR : Staff Profile Not Found.')</script>";
@@ -315,6 +316,7 @@ if (!isset($_SESSION['staffid']))
                                                 <div class="my-post-content pt-3">
                                                     <div class="tag-radio">
                                                         <div class="form-group">
+
 <form action="news_feed.php" method="post" enctype="multipart/form-data">
                                                         <label><strong>Idea</strong></label>
                                                         <select class="form-control" name="category">
@@ -329,28 +331,50 @@ if (!isset($_SESSION['staffid']))
                                                     $roww=mysqli_fetch_array($que);
                                                                        
                                                 ?>
-                                                <option value="Category"><?php echo $roww['name']; ?></option>
+                                                <option name="opCategory" value="opCategory"><?php echo $roww['name']; ?></option>
                                            
                                                        <?php  
                                             }
 
 if (isset($_POST['BtnPost'])) {
-                        $textarea=$_POST['textarea'];
-
-                        $image1=$_FILES['filename1']['name'];
-                 $folder="images/ideas/";
-                if ($image1) 
-                    {
-                        $filename1=$folder.'_'.$image1;
-                        $copied=copy($_FILES['filename1']['tmp_name'],$filename1);
-                     if (!$copied) 
-                    {
+        $txttextarea=$_POST['txttextarea'];
+        $rdovisibility=$_POST['rdovisibility'];
+        $time=$_POST[getdate(timestamp)];
+        $image1=$_FILES['filename1']['name'];
+                
+         $folder="images/ideas/";
+        if ($image1) {
+            $filename1=$folder.'_'.$image1;
+            $copied=copy($_FILES['filename1']['tmp_name'],$filename1);
+             if (!$copied)  {
                     exit("Problem occured and cannot upload image.");
-                    }
-                    }
+            }
+        }
+    $staffid=$_SESSION['staffid'];
 
+    // For staff name
+    // 
+    // $search_sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
+    // $query=mysqli_query($connection,$search_sql);
+    // $row=mysqli_fetch_array($query);
+    // $staffname=$row['name'];
 
-                    $insert= "INSERT INTO tblidea ('name','staffid', 'categoryid','date','file','filetype') VALUES ('') ";
+    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
+    $extension = pathinfo($path, PATHINFO_EXTENSION);
+    //Insert idea into table
+
+    $insert= "INSERT INTO tblidea (idea_detail,staffid,categoryid,date,file,filetype,visibility) VALUES ('$txttextarea','$staffid','opCategory','$time','$filename1','$extension','rdovisibility') ";
+    $result=mysqli_query($connection,$insert);
+
+    if($result) //True
+    {
+        echo "<script>window.alert('Idea Successfully added!')</script>";
+        echo "<script>window.location='news_feed.php'</script>";
+    }
+    else
+    {
+        echo "<p>Something went wrong in idea entry" . mysqli_error($connection) . "</p>";
+    }
         
 
             }
@@ -361,7 +385,7 @@ if (isset($_POST['BtnPost'])) {
                                         </div>
                                                     </div>
                                                     <div class="post-input">
-                                                        <textarea name="textarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please share any idea you have...."></textarea> 
+                                                        <textarea name="txttextarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please share any idea you have...." required></textarea> 
  <style type="text/css" scoped>
         label.label-radio {
     color: black;
@@ -371,14 +395,18 @@ if (isset($_POST['BtnPost'])) {
        }
     </style>    
 
-                         <input type="radio" name="visibility" value="Yes" checked /> <label class="label-radio">Public </label>
-                        <input type="radio"  name="visibility" value="No" /> <label class="label-radio">Anyonymous </label>
+                         <input type="radio" name="rdovisibility" value="yes" checked /> <label class="label-radio">Public </label>
+                        <input type="radio"  name="rdovisibility" value="no" /> <label class="label-radio">Anyonymous </label>
                                                     </div>                                      
                                                      <div class="post-input">
                                                         <input type="file" name="filename1" value="Upload File">
                                                     </div>
-                                                    <div class="post-input">
-                                                        <button class="btn btn-primary" name="BtnPost" type="submit">Post</button>
+                                                        <style type="text/css"> .btnpost {
+                                                            margin-bottom:10px ;
+                                                        } </style>
+                                                    <div class="btnpost">
+                                                                <input class="btn btn-primary" type="submit" value="Save" name="BtnPost">
+
                                                     </div>
 
   <!-- close form of idea upload -->    </form> 
