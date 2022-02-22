@@ -16,7 +16,7 @@
     include_once("inc/autoid.php");
     include_once("inc/connect.php");
 
-if (!isset($_SESSION['staffid'])) 
+if (!isset($_SESSION['staffid'])) // login first if no session 
 {
     echo "<script>window.alert('Please Login first to continue.')</script>";
     echo "<script>window.location='login.php'</script>";
@@ -47,10 +47,14 @@ if (!isset($_SESSION['staffid']))
 
 
 if (isset($_POST['BtnPost'])) {
+
         $ideaid=$_POST['ideaid'];
         $txttextarea=$_POST['txttextarea'];
         $rdovisibility=$_POST['rdovisibility'];
         $timestamp=date('Y-m-d H:i:s');
+
+        // Copying inserted file to images\ideas
+
         $image1=$_FILES['filename1']['name'];
                 
          $folder="images/ideas/";
@@ -61,17 +65,22 @@ if (isset($_POST['BtnPost'])) {
                     exit("Problem occured and cannot upload image.");
             }
         }
-    $staffid=$_SESSION['staffid'];
 
-    // For staff name
+    
+
+    // For staff name 
     // 
     // $search_sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
     // $query=mysqli_query($connection,$search_sql);
+    $staffid=$_SESSION['staffid'];
     $cate=$roww['categoryid'];
 
+    // finding path for filetype 
 
     $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
     $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+
     //Insert idea into table
 
     $insert= "INSERT INTO tblidea (ideaid,idea_detail,staffid,categoryid,idea_date,file,filetype,visibility) VALUES ('$ideaid','$txttextarea','$staffid','$cate','$timestamp','$filename1','$extension','$rdovisibility')  ";
@@ -393,6 +402,10 @@ if (isset($_POST['BtnPost'])) {
                                      <input type="hidden" name="ideaid" value="<?php echo AutoID('tblidea','ideaid','Idea-',5);?>">
                                                     <div class="post-input">
                                                         <textarea name="txttextarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please share any idea you have...." required></textarea> 
+
+
+<!-- style for label-->
+
  <style type="text/css" scoped>
         label.label-radio {
     color: black;
@@ -417,33 +430,52 @@ if (isset($_POST['BtnPost'])) {
                                                     </div>
 
   <!-- close form of idea upload -->    </form> 
+                                                                    <hr>
 
                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
                                                         <label><strong>Newsfeed</strong></label>
-                                                        <img src="images/profile/8.jpg" alt="" class="img-fluid">
-                                                        <a class="post-title" href="javascript:void()">
-                                                            <h4>Physics Department</h4>
+<!--           image                                       <img src="images/profile/8.jpg" alt="" class="img-fluid"> -->                                                        
+
+    <?php 
+
+            $sqll="SELECT * FROM tbldepartment";
+            $que=mysqli_query($connection,$sqll);
+            $deprow=mysqli_fetch_array($que);
+
+    $idea_select="  SELECT * 
+                    FROM tblidea i ";
+    $idea_ret=mysqli_query($connection,$idea_select);
+    $idea_count=mysqli_num_rows($idea_ret);
+
+    for($i=0;$i<$idea_count;$i++) 
+    { 
+
+    $idea_select="  SELECT i.*,r.*,s.* 
+                    FROM tblidea i,tblrating r,tblstaff s 
+                    WHERE i.ideaid=r.ideaid
+                    AND i.staffid=s.staffid
+                    ";  
+        $query=mysqli_query($connection,$idea_select);
+        $idea_rows=mysqli_fetch_array($idea_ret);
+        $posterid=$idea_rows['staffid'];
+
+
+
+        ?>
+
+                                                        <a class="post-title" > 
+    <!-- href="javascript:void()" -->
+                                                            <h4><?php echo $deprow['name'];?> Department</h4>
                                                         </a>
-                                                        <p>Feed back for Physics Department.</p>
+                                                        <p>Like counts here</p>
                                                         <button class="btn btn-primary mr-3"><span class="mr-3"><i
                                                                     class="fa fa-thumbs-up"></i></span>Like</button>
                                                         <button class="btn btn-secondary"><span class="mr-3"><i
                                                                     class="fa fa-reply"></i></span>Comment</button>
 
                                                                     <hr>
-                                                                    <div class="row" style="margin-top: 10px;">
-                                                                        <div class="col-8">
-                                                                            <div class="post-input">
-                                                                                <textarea name="textarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...."></textarea>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-4" style="margin-top: 12px;">
-                                                                            <button class="btn btn-secondary"><span class="mr-3"></span>Add Comment</button>
-                                                                        </div>
-                                                                    </div>
-                                                
-                                                                
-                                                                    <div class="container">
+
+                                                                     <div class="container">
                                                                         <div class="row" style="margin-top: 10px;">
                                                 
                                                                             <div class="col-7">
@@ -459,10 +491,27 @@ if (isset($_POST['BtnPost'])) {
                                                                             sapiente quo sit voluptatem fuga ab magni soluta cumque odit impedit atque asperiores quod
                                                                             natus iure. Vero.
                                                                         </p>
-                                                                    </div>            
+                                                                    </div>  
+
+                                                                    <div class="row" style="margin-top: 10px;">
+                                                                        <div class="col-8">
+                                                                                <div class="post-input">
+                                                                                <textarea name="textarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...."></textarea>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-4" style="margin-top: 12px;">
+                                                                            <button class="btn btn-secondary"><span class="mr-3"></span>Add Comment</button>
+                                                                        </div>
+                                                                    </div>
+                                                                         
                                                     </div>
                                                     <hr>  
-                                                    <div class="profile-uoloaded-post border-bottom-1 pb-5">
+
+<?php    }
+            ?>
+
+
+<!--                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
                                                         <img src="images/profile/10.jpg" alt="" class="img-fluid">
                                                         <a class="post-title" href="javascript:void()">
                                                             <h4>History Department</h4>
@@ -682,7 +731,7 @@ if (isset($_POST['BtnPost'])) {
  -->
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                         </div>
                                     </div>
                                 </div>
