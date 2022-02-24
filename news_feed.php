@@ -23,11 +23,11 @@ if (!isset($_SESSION['staffid'])) // login first if no session
 }
 
 
- if(isset($_SESSION['staffid'])) 
+ if(isset($_SESSION['staffid'])) // login session
 {
-    $staffid=$_SESSION['staffid'];
+    $sid=$_SESSION['staffid'];
 
-    $sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
+    $sql="SELECT * FROM tblstaff WHERE staffid='$sid'";
     $query=mysqli_query($connection,$sql);
     $count=mysqli_num_rows($query);
     $row=mysqli_fetch_array($query);
@@ -44,57 +44,51 @@ if (!isset($_SESSION['staffid'])) // login first if no session
  }
 }
 
-
+// btn function 
 
 if (isset($_POST['BtnPost'])) {
 
+        $staffid=$_SESSION['staffid'];
         $ideaid=$_POST['ideaid'];
         $txttextarea=$_POST['txttextarea'];
         $rdovisibility=$_POST['rdovisibility'];
         $timestamp=date('Y-m-d H:i:s');
+        $cate=$_POST['opCategory'];
+
+
+ // finding path for filetype 
+
+    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
+    $extension = pathinfo($path, PATHINFO_EXTENSION);
 
         // Copying inserted file to images\ideas
 
         $image1=$_FILES['filename1']['name'];
                 
          $folder="images/ideas/";
-        if ($image1) {
-            $filename1=$folder.'_'.$image1;
+        if ($image1) 
+        {
+            $filename1=$folder.$image1;
             $copied=copy($_FILES['filename1']['tmp_name'],$filename1);
-             if (!$copied)  {
-                    exit("Problem occured and cannot upload image.");
+             if (!$copied) 
+            {
+                exit("Problem occured and cannot upload image.");
             }
         }
 
-    
+      
+   
+ $result=mysqli_query($connection,"INSERT INTO tblidea (ideaid,idea_detail,staffid,categoryid,idea_date,file,filetype,visibility) VALUES ('$ideaid','$txttextarea','$staffid','$cate','$timestamp','$filename1','$extension','$rdovisibility')");
 
-    // For staff name 
-    // 
-    // $search_sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
-    // $query=mysqli_query($connection,$search_sql);
-    $staffid=$_SESSION['staffid'];
-    $cate=$roww['categoryid'];
-
-    // finding path for filetype 
-
-    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
-    $extension = pathinfo($path, PATHINFO_EXTENSION);
-
-
-    //Insert idea into table
-
-    $insert= "INSERT INTO tblidea (ideaid,idea_detail,staffid,categoryid,idea_date,file,filetype,visibility) VALUES ('$ideaid','$txttextarea','$staffid','$cate','$timestamp','$filename1','$extension','$rdovisibility')  ";
-    $result=mysqli_query($connection,$insert);
-
-    if($result) //True
-    {
+        if($result) //True
+        {
         echo "<script>window.alert('Idea Successfully added!')</script>";
-        echo "<script>window.location='news_feed.php'</script>";
-    }
-    else
-    {
-        echo "<p>Something went wrong in idea entry" . mysqli_error($connection) . "</p>";
-    }
+        echo "<script>window.location='staff_profile.php'</script>";
+        }
+        else
+        {
+        echo "<p>Something went wrong in Idea entry! br nyr " . mysqli_error($connection) . "</p>";
+        }
         
 
 }
@@ -374,10 +368,9 @@ if (isset($_POST['BtnPost'])) {
                                                     <div class="tag-radio">
                                                         <div class="form-group">
 
-<form action="news_feed.php" method="post" enctype="multipart/form-data">
+<form action="news_feed.php" method="POST" enctype="multipart/form-data">
                                                         <label><strong>Idea</strong></label>
-                                                        <select class="form-control" name="category">
-                                                    <option value="nullval">Choose Category</option>
+                                                        <select name="opCategory" class="form-control" >
 
                                                 <?php 
 
@@ -386,11 +379,9 @@ if (isset($_POST['BtnPost'])) {
                                                     $countt=mysqli_num_rows($que);
                                              for ($i=0; $i<$countt; $i++){
                                                     $roww=mysqli_fetch_array($que);
-                                                                       
-                                                ?>
-                                                <option name="opCategory" value="opCategory"><?php echo $roww['name']; ?></option>
-                                           
-                                                       <?php  
+                                                    $cateid=$roww['categoryid'];
+                                                    $name=$roww['name'];
+                                                 echo "<option value='$cateid'>$cateid / $name</option>";                                   
                                             }
 
 
@@ -419,21 +410,25 @@ if (isset($_POST['BtnPost'])) {
                         <input type="radio"  name="rdovisibility" value="no" /> <label class="label-radio">Anyonymous </label>
                                                     </div>                                      
                                                      <div class="post-input">
-                                                        <input type="file" name="filename1" value="Upload File">
+                                                        <input type="file" name="filename1" value="Upload File" required>
                                                     </div>
-                                                        <style type="text/css"> .btnpost {
+                                                        <style type="text/css"> .btnsub {
                                                             margin-bottom:10px ;
                                                         } </style>
-                                                    <div class="btnpost">
-                                                                <input class="btn btn-primary" type="submit" value="Save" name="BtnPost">
+                                                    <div class="btnsub">
+                                                    <input class="btn btn-primary" type="submit"  name="BtnPost">
 
                                                     </div>
 
   <!-- close form of idea upload -->    </form> 
+
+
                                                                     <hr>
 
                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
                                                         <label><strong>Newsfeed</strong></label>
+
+
 <!--           image                                       <img src="images/profile/8.jpg" alt="" class="img-fluid"> -->                                                        
 
     <?php 
@@ -442,32 +437,55 @@ if (isset($_POST['BtnPost'])) {
             $que=mysqli_query($connection,$sqll);
             $deprow=mysqli_fetch_array($que);
 
-    $idea_select="  SELECT * 
-                    FROM tblidea i ";
+    $idea_select=" SELECT i.*,s.*
+                    FROM tblidea i,tblstaff s 
+                    WHERE i.staffid=s.staffid;";
     $idea_ret=mysqli_query($connection,$idea_select);
     $idea_count=mysqli_num_rows($idea_ret);
 
     for($i=0;$i<$idea_count;$i++) 
     { 
+// poster connection
 
-    $idea_select="  SELECT i.*,r.*,s.* 
-                    FROM tblidea i,tblrating r,tblstaff s 
-                    WHERE i.ideaid=r.ideaid
-                    AND i.staffid=s.staffid
+   
+
+    $idea_row=mysqli_fetch_array($idea_ret);
+ $posterid=$idea_row['staffid'];
+    $postername=$idea_row['name'];
+    $postdate=$idea_row['idea_date'];
+    $ideaPost=$idea_row['idea_detail'];
+    
+                                                                
+       
+
+
+// rating and staff count connection
+   $ir_select="  SELECT r.*,s.* 
+                    FROM tblrating r,tblstaff s 
+                    WHERE r.staffid=s.staffid;
                     ";  
-        $query=mysqli_query($connection,$idea_select);
-        $idea_rows=mysqli_fetch_array($idea_ret);
-        $posterid=$idea_rows['staffid'];
-
-
-
-        ?>
+        $rq=mysqli_query($connection,$ir_select);
+                                              ?>
 
                                                         <a class="post-title" > 
     <!-- href="javascript:void()" -->
-                                                            <h4><?php echo $deprow['name'];?> Department</h4>
+                                                            <h3><?php echo $deprow['name'];?> Department</h3>
+                                                            <h4><?php echo $posterid ;
+                                                                    echo " - ";
+                                                                    echo $postername; 
+                                                                    echo "  posted at  ";
+                                                                    echo $postdate;     ?> </h4>
+
+
                                                         </a>
-                                                        <p>Like counts here</p>
+                                                        <h5>
+                                                            <style type="text/css">  #textarea{
+                                                                font-size: 20px;
+                                                            }</style>
+                                                            <textarea  id="textarea" class="form-control bg-transparent" placeholder=" <?php   echo $ideaPost; ?>" disabled></textarea> 
+                                                               
+                                                        </h5>
+                                                        <p>Likes</p>
                                                         <button class="btn btn-primary mr-3"><span class="mr-3"><i
                                                                     class="fa fa-thumbs-up"></i></span>Like</button>
                                                         <button class="btn btn-secondary"><span class="mr-3"><i
@@ -597,10 +615,10 @@ if (isset($_POST['BtnPost'])) {
                                                     </div>
                                                     <hr>               
                                                     </div>
-                                                    <!-- 
+                                                    
                                                     <div class="text-center mb-2"><a href="javascript:void()" class="btn btn-primary">Load More</a>
                                                     </div> -->
-                                            </div>
+                                       <!--      </div>
 
                                             <div id="about-me" class="tab-pane fade">
                                                 <div class="profile-about-me">
@@ -726,12 +744,12 @@ if (isset($_POST['BtnPost'])) {
                                                                     <label for="gridCheck" class="form-check-label">Check me out</label>
                                                                 </div>
                                                             </div>
-                                                           <!--  <button class="btn btn-primary" >Sign
+                                                             <button class="btn btn-primary" >Sign
                                                                 in</button>
  -->
                                                     </div>
                                                 </div>
-                                            </div> -->
+                                            </div>  
                                         </div>
                                     </div>
                                 </div>
@@ -750,7 +768,7 @@ if (isset($_POST['BtnPost'])) {
         ***********************************-->
         <div class="footer">
             <div class="copyright">
-                <p>Designed &amp; Developed by <a href="#" target="_blank">STA/TPH/ZHTO</a> 2022</p>
+                <p>Designed &amp; Developed by <a href="#" target="_blank">STA/TPH/ZHHO</a> 2022</p>
             </div>
         </div>
         <!--**********************************
