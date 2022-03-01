@@ -83,7 +83,7 @@ if (isset($_POST['BtnPost'])) {
         if($result) //True
         {
         echo "<script>window.alert('Idea Successfully added!')</script>";
-        echo "<script>window.location='staff_profile.php'</script>";
+        echo "<script>window.location='news_feed.php'</script>";
         }
         else
         {
@@ -439,7 +439,9 @@ if (isset($_POST['BtnPost'])) {
 
     $idea_select=" SELECT i.*,s.*
                     FROM tblidea i,tblstaff s 
-                    WHERE i.staffid=s.staffid;";
+                    WHERE i.staffid=s.staffid
+                    ORDER BY i.idea_date DESC
+                    LIMIT 5;";
     $idea_ret=mysqli_query($connection,$idea_select);
     $idea_count=mysqli_num_rows($idea_ret);
 
@@ -450,34 +452,67 @@ if (isset($_POST['BtnPost'])) {
    
 
     $idea_row=mysqli_fetch_array($idea_ret);
- $posterid=$idea_row['staffid'];
+    $posterid=$idea_row['staffid'];
+    $ideaid=$idea_row['ideaid'];
     $postername=$idea_row['name'];
+
     $postdate=$idea_row['idea_date'];
     $ideaPost=$idea_row['idea_detail'];
+    $ideaPost=$idea_row['idea_detail'];
+    $ideavisibility=$idea_row['visibility'];
     
                                                                 
-       
+    
 
+// rating and staff count connection to a idea
 
-// rating and staff count connection
-   $ir_select="  SELECT r.*,s.* 
-                    FROM tblrating r,tblstaff s 
-                    WHERE r.staffid=s.staffid;
-                    ";  
-        $rq=mysqli_query($connection,$ir_select);
-                                              ?>
+   // $rti_select="  SELECT i.*,r.*,s.* 
+   //                  FROM tblrating r,tblstaff s 
+   //                  WHERE r.responderid=s.staffid
+   //                  AND r.ideaid=i.ideaid;
+   //                  ";  
+   //      $rq=mysqli_query($connection,$rti_select);
+   //      $rtrow=mysqli_fetch_array($rq);
+                                        switch ($ideavisibility){  
+
+                                        case "yes":
+    ?>
 
                                                         <a class="post-title" > 
-    <!-- href="javascript:void()" -->
                                                             <h3><?php echo $deprow['name'];?> Department</h3>
                                                             <h4><?php echo $posterid ;
                                                                     echo " - ";
                                                                     echo $postername; 
                                                                     echo "  posted at  ";
-                                                                    echo $postdate;     ?> </h4>
+                                                                    echo $postdate;    
 
-
+                                                      ?> </h4>
                                                         </a>
+
+    <?php 
+                                        break;
+
+                                        case "no":
+    echo    "<a class='post-title'>
+                <h4> Anonymous   </h3>
+            </a>";
+                                        break;
+                                        }
+    ?>
+                                                        <h4>
+                                                            <?php 
+                                       
+
+
+// category htae ya ml ******************** 
+    $display_cat=mysqli_query($connection,"SELECT i.*,c.*
+                    FROM tblidea i,tblcategory c 
+                    WHERE i.categoryid=c.categoryid;");
+    $display_cat_row=mysqli_fetch_array($display_cat);
+    echo "Idea's Category - ".$display_cat_row['name'];
+
+                                                              ?>
+                                                        </h4>
                                                         <h5>
                                                             <style type="text/css">  #textarea{
                                                                 font-size: 20px;
@@ -485,11 +520,30 @@ if (isset($_POST['BtnPost'])) {
                                                             <textarea  id="textarea" class="form-control bg-transparent" placeholder=" <?php   echo $ideaPost; ?>" disabled></textarea> 
                                                                
                                                         </h5>
-                                                        <p>Likes</p>
+                                                        <p>
+
+        <?php 
+//like count with function
+
+            $ideaid=$idea_row['ideaid'];
+    $ratfind="SELECT i.ideaid,i.categoryid,sum(r.voting) AS 'Votes' FROM tblidea i, tblrating r WHERE i.ideaid=$ideaid AND i.ideaid=r.ideaid; ";
+    $rating_q=mysqli_query($connection,$ratfind); 
+    
+    // $r_row=mysqli_fetch_array($rating_q);
+    // $votes=$r_row['Votes'];
+    //  echo $votes ."Likes";
+
+// Comment Count 
+        // $comment_count=mysql_query($connection,"SELECT COUNT(*) AS Comments FROM tblcomment WHERE ideaid=$ideaid");
+        // $comment_count_row=mysqli_fetch_array($comment_count);
+        // $comment_counts=$comment_count_row['Comments'];
+        // echo $comment_counts;
+
+?>                                                        </p>
+
+
                                                         <button class="btn btn-primary mr-3"><span class="mr-3"><i
                                                                     class="fa fa-thumbs-up"></i></span>Like</button>
-                                                        <button class="btn btn-secondary"><span class="mr-3"><i
-                                                                    class="fa fa-reply"></i></span>Comment</button>
 
                                                                     <hr>
 
@@ -497,7 +551,22 @@ if (isset($_POST['BtnPost'])) {
                                                                         <div class="row" style="margin-top: 10px;">
                                                 
                                                                             <div class="col-7">
-                                                                                <h4 style="color: black;">Commenter</h4>
+                                                                                <h4 style="color: black;">
+
+<?php
+        // Displaying comments
+                $display_cmt=mysqli_query($connection,"SELECT c.*, s.* 
+                                        FROM tblcomment c, tblstaff s 
+                                        WHERE c.commenterid=$ideaid;");
+
+
+        // If condition for no comment or multiple comments 
+
+                // $display_cmt_row=mysqli_fetch_array($display_cmt);
+                // $commenter=$display_cmt_row['name'];
+                // echo $commenter;
+
+?>                                                                              </h4>
                                                                             </div>
                                                                             <div class="col-5">
                                                                                 <h5>5 hours ago</h5>
@@ -525,7 +594,9 @@ if (isset($_POST['BtnPost'])) {
                                                     </div>
                                                     <hr>  
 
-<?php    }
+<?php   
+
+    } //end of idea count condition
             ?>
 
 
