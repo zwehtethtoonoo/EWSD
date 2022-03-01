@@ -87,7 +87,7 @@ if (isset($_POST['BtnPost'])) {
         }
         else
         {
-        echo "<p>Something went wrong in Idea entry! br nyr " . mysqli_error($connection) . "</p>";
+        echo "<p>Something went wrong in Idea entry!  " . mysqli_error($connection) . "</p>";
         }
         
 
@@ -437,21 +437,18 @@ if (isset($_POST['BtnPost'])) {
             $que=mysqli_query($connection,$sqll);
             $deprow=mysqli_fetch_array($que);
 
-    $idea_select=" SELECT i.*,s.*
+    $idea_select="SELECT i.*,s.name
                     FROM tblidea i,tblstaff s 
                     WHERE i.staffid=s.staffid
-                    ORDER BY i.idea_date DESC
-                    LIMIT 5;";
+                    ORDER BY i.idea_date 
+                    LIMIT 5";
     $idea_ret=mysqli_query($connection,$idea_select);
     $idea_count=mysqli_num_rows($idea_ret);
 
-    for($i=0;$i<$idea_count;$i++) 
-    { 
-// poster connection
-
-   
-
+    for($i=0; $i < $idea_count; $i++)  { 
+// poster connection   
     $idea_row=mysqli_fetch_array($idea_ret);
+
     $posterid=$idea_row['staffid'];
     $ideaid=$idea_row['ideaid'];
     $postername=$idea_row['name'];
@@ -461,7 +458,8 @@ if (isset($_POST['BtnPost'])) {
     $ideaPost=$idea_row['idea_detail'];
     $ideavisibility=$idea_row['visibility'];
     
-                                                                
+    $comres=mysqli_query($connection,"SELECT * FROM tblcomment WHERE ideaid='$ideaid'");
+                                                        
     
 
 // rating and staff count connection to a idea
@@ -500,16 +498,19 @@ if (isset($_POST['BtnPost'])) {
                                         }
     ?>
                                                         <h4>
-                                                            <?php 
-                                       
-
+                                                        <?php 
+                           
 
 // category htae ya ml ******************** 
+
     $display_cat=mysqli_query($connection,"SELECT i.*,c.*
-                    FROM tblidea i,tblcategory c 
-                    WHERE i.categoryid=c.categoryid;");
+                                            FROM tblidea i,tblcategory c 
+                                            WHERE '$ideaid'=i.ideaid
+                                            AND i.categoryid=c.categoryid;");
+
     $display_cat_row=mysqli_fetch_array($display_cat);
     echo "Idea's Category - ".$display_cat_row['name'];
+
 
                                                               ?>
                                                         </h4>
@@ -522,63 +523,95 @@ if (isset($_POST['BtnPost'])) {
                                                         </h5>
                                                         <p>
 
-        <?php 
+    <?php        
+
 //like count with function
 
-            $ideaid=$idea_row['ideaid'];
-    $ratfind="SELECT i.ideaid,i.categoryid,sum(r.voting) AS 'Votes' FROM tblidea i, tblrating r WHERE i.ideaid=$ideaid AND i.ideaid=r.ideaid; ";
-    $rating_q=mysqli_query($connection,$ratfind); 
-    
+
+    // $ratfind="SELECT i.ideaid,i.categoryid,sum(r.voting) AS 'Votes' 
+    //         FROM tblidea i, tblrating r 
+    //         WHERE i.ideaid=$ideaid AND i.ideaid=r.ideaid;";
+    // $rating_q=mysqli_query($connection,$ratfind); 
+
     // $r_row=mysqli_fetch_array($rating_q);
     // $votes=$r_row['Votes'];
     //  echo $votes ."Likes";
 
-// Comment Count 
-        // $comment_count=mysql_query($connection,"SELECT COUNT(*) AS Comments FROM tblcomment WHERE ideaid=$ideaid");
-        // $comment_count_row=mysqli_fetch_array($comment_count);
-        // $comment_counts=$comment_count_row['Comments'];
-        // echo $comment_counts;
-
-?>                                                        </p>
+    ?>                                                  </p>
 
 
                                                         <button class="btn btn-primary mr-3"><span class="mr-3"><i
                                                                     class="fa fa-thumbs-up"></i></span>Like</button>
+                                                                      <hr>
+    <?php 
 
-                                                                    <hr>
+// Comment Count 
+        $ideaid=$idea_row['ideaid'];
+        $ideaaaid=$display_cat_row['ideaid'];
+        $comres=mysqli_query($connection,"SELECT * FROM tblcomment c WHERE c.ideaid='$ideaid'");
 
-                                                                     <div class="container">
-                                                                        <div class="row" style="margin-top: 10px;">
-                                                
-                                                                            <div class="col-7">
-                                                                                <h4 style="color: black;">
+        $comrow=mysqli_fetch_array($comres);
 
-<?php
+   // If condition for no comment or multiple comments 
+        if (empty($comrow)) {
+     ?> 
+                                                                        <div class="container">
+                                                                            <div class="row" style="margin-top: 10px;">
+                                                                                <div class="col-7">
+                                                                                    <h4 style="color: black;"> <?php echo $ideaid. " No comments!" ; ?></h4>
+                                                                                </div>
+                                                                                
+                                                                            </div>
+                                                                        
+                                                                        </div>
+    <?php 
+        }
+        else if ($comrow >= '1') {
+
+
+
+
         // Displaying comments
-                $display_cmt=mysqli_query($connection,"SELECT c.*, s.* 
-                                        FROM tblcomment c, tblstaff s 
-                                        WHERE c.commenterid=$ideaid;");
+                        $display_cmt=mysqli_query($connection,"SELECT c.*, s.*
+                                        FROM tblcomment c, tblstaff s
+                                        WHERE '$ideaid'=c.ideaid
+                                        AND c.commenterid=s.staffid;");
+                                $display_cmt_count=mysqli_num_rows($display_cmt);
+                                 
+    ?>
+
+                                                                    
+    <?php 
+        // Loop for multiple comments
+
+            for ($c=0; $c < $display_cmt_count ; $c++) { 
+
+                $display_cmt_row=mysqli_fetch_array($display_cmt);
+                $commenter=$display_cmt_row['name'];
 
 
-        // If condition for no comment or multiple comments 
+            
 
-                // $display_cmt_row=mysqli_fetch_array($display_cmt);
-                // $commenter=$display_cmt_row['name'];
-                // echo $commenter;
-
-?>                                                                              </h4>
+    ?>                                                <div class="container">
+                                                                        <div class="row" style="margin-top: 10px;">
+                                                                            <div class="col-7">
+                                                                                <h4 style="color: black;" ><?php echo $commenter ; ?></h4>
                                                                             </div>
                                                                             <div class="col-5">
-                                                                                <h5>5 hours ago</h5>
+                                                                                <h5><?php echo $display_cmt_row['date']; ?></h5>
                                                                             </div>
+                                                                            <div class="col-7">
+                                                                                <h5><?php echo $display_cmt_row['comment']; ?></h3>
+                                                                            </div>
+                                                                            
                                                                         </div>
-                                                
-                                                                        <p>
-                                                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellat quam aut sequi, dolore,
-                                                                            sapiente quo sit voluptatem fuga ab magni soluta cumque odit impedit atque asperiores quod
-                                                                            natus iure. Vero.
-                                                                        </p>
-                                                                    </div>  
+                                                                    </div>
+<?php 
+
+                }
+            }
+?>
+
 
                                                                     <div class="row" style="margin-top: 10px;">
                                                                         <div class="col-8">
@@ -597,7 +630,7 @@ if (isset($_POST['BtnPost'])) {
 <?php   
 
     } //end of idea count condition
-            ?>
+?>
 
 
 <!--                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
