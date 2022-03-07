@@ -94,6 +94,7 @@ if (isset($_POST['BtnPost'])) {
 }
 
 
+
  ?>
 
 </head>
@@ -369,7 +370,7 @@ if (isset($_POST['BtnPost'])) {
                                                         <div class="form-group">
 
 <form action="news_feed.php" method="POST" enctype="multipart/form-data">
-                                                        <label><strong>Idea</strong></label>
+                                                        <label><h4>Create Idea</h4></label>
                                                         <select name="opCategory" class="form-control" >
 
                                                 <?php 
@@ -426,7 +427,7 @@ if (isset($_POST['BtnPost'])) {
                                                                     <hr>
 
                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
-                                                        <label><strong>Newsfeed</strong></label>
+                                                        <label><h1>Newsfeed</h1></label>
 
 
 <!--           image                                       <img src="images/profile/8.jpg" alt="" class="img-fluid"> -->                                                        
@@ -539,9 +540,14 @@ if (isset($_POST['BtnPost'])) {
 
     ?>                                                  </p>
 
-
-                                                        <button class="btn btn-primary mr-3"><span class="mr-3"><i
-                                                                    class="fa fa-thumbs-up"></i></span>Like</button>
+<style type="text/css">
+        a.acolor {
+            color: white;
+        }                                                            
+</style>
+                                                       <button class="btn btn-secondary"><a href="idea_details.php?ideaid=<?php echo  $ideaid; ?>" class="mr-4 acolor" title="LINK" >
+                                                        Give react or comment             
+                                                        </a></button>
                                                                       <hr>
     <?php 
 
@@ -577,6 +583,7 @@ if (isset($_POST['BtnPost'])) {
                                         WHERE '$ideaid'=c.ideaid
                                         AND c.commenterid=s.staffid;");
                                 $display_cmt_count=mysqli_num_rows($display_cmt);
+
                                  
     ?>
 
@@ -588,6 +595,8 @@ if (isset($_POST['BtnPost'])) {
 
                 $display_cmt_row=mysqli_fetch_array($display_cmt);
                 $commenter=$display_cmt_row['name'];
+                $staffid=$_SESSION['staffid'];
+
 
 
             
@@ -598,7 +607,7 @@ if (isset($_POST['BtnPost'])) {
                                                                                 <h4 style="color: black;" ><?php echo $commenter ; ?></h4>
                                                                             </div>
                                                                             <div class="col-5">
-                                                                                <h5><?php echo $display_cmt_row['date']; ?></h5>
+                                                                                <h5><?php echo $display_cmt_row['commentdate']; ?></h5>
                                                                             </div>
                                                                             <div class="col-7">
                                                                                 <h5><?php echo $display_cmt_row['comment']; ?></h3>
@@ -610,17 +619,48 @@ if (isset($_POST['BtnPost'])) {
 
                 }
             }
+
+
+            
+
 ?>
 
 
                                                                     <div class="row" style="margin-top: 10px;">
                                                                         <div class="col-8">
                                                                                 <div class="post-input">
-                                                                                <textarea name="textarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...."></textarea>
+                            <input type="hidden" name="commentid" value="<?php echo AutoID('tblcomment','commentid','CId-',5);?>">
+                            <input type="hidden" name="idea_id" value="<?php echo $ideaid ?>">
+                            <input type="hidden" name="commenterid" value="<?php echo $staffid ?>">
+                                                                                <textarea name="txtarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...."></textarea>
                                                                             </div>
                                                                         </div>
+<?php 
+        if (isset($_POST['btnaddcmt'])) {
+                
+            $commentid=$_POST['commentid'];
+            $txtcmt=$_POST['txtarea'];            
+            $timestamp=date('Y-m-d H:i:s');
+            $ideaid=$_POST['idea_id'];
+            $commenterid=$_POST['staffid'];
+            $comment_result=mysqli_query($connection,"INSERT INTO tblcomment (commentid,ideaid,commenterid,commentdate,comment) VALUES ('$commentid','$ideaid','$commenterid','$timestamp','$txtcmt');");
+
+            if($comment_result) //True
+        {
+        echo "<script>window.alert('Comment Successfully added!')</script>";
+        echo "<script>window.location='news_feed.php'</script>";
+        }
+        else
+        {
+        echo "<p>Something went wrong in comment entry!  " . mysqli_error($connection) . "</p>";
+        }
+
+    }
+
+?>                                                                        
+
                                                                         <div class="col-4" style="margin-top: 12px;">
-                                                                            <button class="btn btn-secondary"><span class="mr-3"></span>Add Comment</button>
+                                                                            <button type="submit" name="btnaddcmt" class="btn btn-secondary">Add Comment</button>
                                                                         </div>
                                                                     </div>
                                                                          
