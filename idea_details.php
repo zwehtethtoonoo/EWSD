@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.png">
     <link href="./css/style.css" rel="stylesheet">
+    <script type="text/javascript" src="js/script.js" ></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
 
 
     <?php 
@@ -430,9 +433,15 @@ if (!isset($_SESSION['staffid'])) // login first if no session
             color: white;
         }                                                            
 </style>
-                                                       <button class="btn btn-secondary">
-                                                        Give react or comment             
-                                                        </button>
+                                                       <i class="fa fa-thumbs-o-up like-btn" data-id="<?php echo $ideaid?>"></i>
+                                                       <i class="fa fa-thumbs-o-down dislike-btn" data-id="<?php echo $ideaid?>"></i>
+<?php
+$download_res=mysqli_query($connection,"SELECT *
+                                        FROM tblidea
+                                        WHERE '$ideaid'=ideaid;");
+                                $download=mysqli_fetch_array($download_res);
+?>                                                                            
+                                                                    <p><a href="download.php?path=<?php echo $download['file']; ?>">Download file</a></p>
                                                                       <hr>
     <?php 
 
@@ -496,7 +505,7 @@ if (!isset($_SESSION['staffid'])) // login first if no session
                                                                             <div class="col-7">
                                                                                 <h5><?php echo $display_cmt_row['comment']; ?></h3>
                                                                             </div>
-                                                                            
+
                                                                         </div>
                                                                     </div>
 <?php 
@@ -553,7 +562,7 @@ if (!isset($_SESSION['staffid'])) // login first if no session
 
                                                                         </div>
                                                                     </div>
-                                                                         
+
                                                     </div>
                                                     <hr>  
 

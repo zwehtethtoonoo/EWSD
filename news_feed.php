@@ -478,8 +478,8 @@ if (isset($_POST['BtnPost'])) {
     ?>
 
                                                         <a class="post-title" > 
-                                                            <h3><?php echo $deprow['name'];?> Department</h3>
-                                                            <h4><?php echo $posterid ;
+                                                            <h3 style="padding-top:10px; "><?php echo $deprow['name'];?> Department</h3>
+                                                            <h4 style="padding-top:5px; padding-bottom:5px;"><?php echo $posterid ;
                                                                     echo " - ";
                                                                     echo $postername; 
                                                                     echo "  posted at  ";
@@ -626,43 +626,7 @@ if (isset($_POST['BtnPost'])) {
 ?>
 
 
-                                                                    <div class="row" style="margin-top: 10px;">
-                                                                        <div class="col-8">
-                                                                                <div class="post-input">
-                            <input type="hidden" name="commentid" value="<?php echo AutoID('tblcomment','commentid','CId-',5);?>">
-                            <input type="hidden" name="idea_id" value="<?php echo $ideaid ?>">
-                            <input type="hidden" name="commenterid" value="<?php echo $staffid ?>">
-                                                                                <textarea name="txtarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...."></textarea>
-                                                                            </div>
-                                                                        </div>
-<?php 
-        if (isset($_POST['btnaddcmt'])) {
-                
-            $commentid=$_POST['commentid'];
-            $txtcmt=$_POST['txtarea'];            
-            $timestamp=date('Y-m-d H:i:s');
-            $ideaid=$_POST['idea_id'];
-            $commenterid=$_POST['staffid'];
-            $comment_result=mysqli_query($connection,"INSERT INTO tblcomment (commentid,ideaid,commenterid,commentdate,comment) VALUES ('$commentid','$ideaid','$commenterid','$timestamp','$txtcmt');");
-
-            if($comment_result) //True
-        {
-        echo "<script>window.alert('Comment Successfully added!')</script>";
-        echo "<script>window.location='news_feed.php'</script>";
-        }
-        else
-        {
-        echo "<p>Something went wrong in comment entry!  " . mysqli_error($connection) . "</p>";
-        }
-
-    }
-
-?>                                                                        
-
-                                                                        <div class="col-4" style="margin-top: 12px;">
-                                                                            <button type="submit" name="btnaddcmt" class="btn btn-secondary">Add Comment</button>
-                                                                        </div>
-                                                                    </div>
+                                                                   
                                                                          
                                                     </div>
                                                     <hr>  
