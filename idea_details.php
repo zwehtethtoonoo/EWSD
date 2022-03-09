@@ -5,20 +5,29 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Focus - Bootstrap Admin Dashboard </title>
+    <title>Idea Details </title>
     <!-- Favicon icon -->
+   
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.png"> 
+
+<!-- add font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.png">
+
+<!-- Add css  -->
     <link href="./css/style.css" rel="stylesheet">
-    <script type="text/javascript" src="js/script.js" ></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
+<!-- Add script -->
+
+
+<!-- add jquery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
 
 
 
     <?php 
-    include("inc/header.php");
+    include('inc/header.php');
     include_once("inc/autoid.php");
-    include_once("inc/connect.php");
 
 if (!isset($_SESSION['staffid'])) // login first if no session 
 {
@@ -48,11 +57,71 @@ if (!isset($_SESSION['staffid'])) // login first if no session
  }
 }
 
+
  ?>
 
 </head>
 
 <body>
+
+<script type="text/javascript">
+
+$(document).ready(function(){ 
+
+    $('.like_btn').on('click',function(){
+
+        var idea_id = $(this).data('id');
+        alert(idea_id);
+
+        
+
+    })        
+})    
+
+</script>
+
+    <?php
+
+// if (isset($_POST['action'])) {
+//     $idea_id=$_POST['ideaid'];
+//     $action=$_POST['action'];
+//     $time=date('Y-m-d H:i:s');
+
+
+//     switch ($action) {
+//         case 'like':
+//             $sql="INSERT INTO tblrating (ideaid,responderid,react_date,rating)
+//                     VALUES ('$idea_id','$staffid','$time','$action')
+//                     ON DUPLICATE KEY UPDATE rating='like'";
+//             break;
+
+//         case 'unlike':
+//             $sql="INSERT INTO tblrating (ideaid,responderid,react_date,rating)
+//                     VALUES ('$idea_id','$staffid','$time','$action')
+//                     ON DUPLICATE KEY UPDATE rating='unlike'";
+//             break;
+
+//         case 'dislike':
+//             $sql="DELETE FROM tblrating WHERE responderid='$staffid' AND ideaid='$idea_id'";
+//             break;
+
+//         case 'undislike':
+//             $sql="DELETE FROM tblrating WHERE responderid='$staffid' AND ideaid='$idea_id'";
+//             break;
+
+//         default:
+//             break;
+//     }
+//     //execute query
+//     mysqli_query($connection,$sql);
+//     exit();
+
+
+// } else {
+//         echo "<p>Something went wrong in addding rating!  " . mysqli_error($connection) . "</p>";
+// }
+
+    ?>
 
     <!--*******************
         Preloader start
@@ -387,7 +456,7 @@ if (!isset($_SESSION['staffid'])) // login first if no session
                                         }
     ?>
                                                         <h4>
-                                                        <?php 
+<?php 
                            
 
 // category htae ya ml ******************** 
@@ -410,8 +479,7 @@ if (!isset($_SESSION['staffid'])) // login first if no session
                                                             <textarea  id="textarea" class="form-control bg-transparent" placeholder=" <?php   echo $ideaPost; ?>" disabled></textarea> 
                                                                
                                                         </h5>
-                                                        <p>
-
+                                                       
     <?php        
 
 //like count with function
@@ -426,24 +494,50 @@ if (!isset($_SESSION['staffid'])) // login first if no session
     // $votes=$r_row['Votes'];
     //  echo $votes ."Likes";
 
-    ?>                                                  </p>
+    ?>                                                   
 
 <style type="text/css">
         a.acolor {
             color: white;
-        }                                                            
+        }        
+
+
 </style>
-                                                       <i class="fa fa-thumbs-o-up like-btn" data-id="<?php echo $ideaid?>"></i>
-                                                       <i class="fa fa-thumbs-o-down dislike-btn" data-id="<?php echo $ideaid?>"></i>
+<?php 
+    $res=mysqli_query($connection,"SELECT *
+                                        FROM tblidea
+                                        WHERE '$ideaid'=ideaid;");
+                                $react=mysqli_fetch_array($res);
+?>
+                                      <input type="hidden" name="ratingid" value="<?php echo AutoID('tblrating','ratingid','RT-',5);?>">
+<style type="text/css">
+    i.like_btn{
+        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+    }
+
+    i.dislike_btn {
+        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+    }
+</style>                                      
+                                        <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
+                                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
+                                        
 <?php
+
+//Download function 
+
 $download_res=mysqli_query($connection,"SELECT *
                                         FROM tblidea
                                         WHERE '$ideaid'=ideaid;");
                                 $download=mysqli_fetch_array($download_res);
-?>                                                                            
-                                                                    <p><a href="download.php?path=<?php echo $download['file']; ?>">Download file</a></p>
-                                                                      <hr>
-    <?php 
+?>  
+                                                                                <div class="col-5">
+                <p style="align-self: right; text-align: right;"><strong> <a style=" color: black; font-size: 15px; align-self: right; text-align: right;" href="download.php?path=<?php echo $download['file']; ?>">Download file</a></strong></p>
+                                                                     
+                                                                                </div>
+                                                                                
+                                                                        <hr>                     
+                                                                        <?php 
 
 // Comment Count 
         $ideaaaid=$display_cat_row['ideaid'];
@@ -463,12 +557,10 @@ $download_res=mysqli_query($connection,"SELECT *
                                                                             </div>
                                                                         
                                                                         </div>
+                                                                </div>
     <?php 
         }
         else if ($comrow >= '1') {
-
-
-
 
         // Displaying comments
                         $display_cmt=mysqli_query($connection,"SELECT c.*, s.*
@@ -523,12 +615,15 @@ $download_res=mysqli_query($connection,"SELECT *
                                                                         <div class="col-8">
 
  <?php 
+
+ // if comment button submit
+
         if (isset($_POST['BtnPost'])) {
                 
             $commentid=$_POST['commentid'];
             $txtcmt=$_POST['txtarea'];            
             $timestamp=date('Y-m-d H:i:s');
-            $upideaid=$_POST['idea_id'];
+            $upideaid=$_POST['upideaid'];
             $commenterid=$_POST['commenterid'];
             $comment_result=mysqli_query($connection,"INSERT INTO tblcomment (commentid,ideaid,commenterid,commentdate,comment) VALUES ('$commentid','$upideaid','$commenterid','$timestamp','$txtcmt');");
 
@@ -549,7 +644,7 @@ $download_res=mysqli_query($connection,"SELECT *
 <form action="#" method="POST" enctype="multipart/form-data">
 <div class="post-input">          
                             <input type="hidden" name="commentid" value="<?php echo AutoID('tblcomment','commentid','CId-',5);?>">
-                            <input type="hidden" name="idea_id" value="<?php echo $ideaid ?>">
+                            <input type="hidden" name="upideaid" value="<?php echo $ideaid ?>">
                             <input type="hidden" name="commenterid" value="<?php echo $staffid ?>">
              
                                                                                 <textarea name="txtarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...." required></textarea>
