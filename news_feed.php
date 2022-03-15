@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Focus - Bootstrap Admin Dashboard </title>
+    <title>Newsfeed </title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.png">
     <link href="./css/style.css" rel="stylesheet">
@@ -107,9 +107,11 @@ if (isset($_POST['BtnPost'])) {
 
 
 if (isset($_POST['action'])) {
-    $idea_id=$_POST['ideaid'];
+    $idea_id=$_POST['idea_id'];
     $action=$_POST['action'];
     $time=date('Y-m-d H:i:s');
+    $staffid=$_SESSION['staffid'];
+
 
 
     switch ($action) {
@@ -159,29 +161,49 @@ if (isset($_POST['action'])) {
 $(document).ready(function(){ 
 
     $('.like_btn').on('click',function(){
-
+         
         var idea_id = $(this).data('id');
-        $clicked_btn = $(this);
 
-        if ($clicked_btn.hasClass('fa-thumbs-o-up')) {
+        clicked_btn = $(this);
+
+        if (clicked_btn.hasClass('fa-thumbs-o-up')) {
             action = 'like';
 
-        } else if ($clicked_btn.hasClass('fa-thumbs-up')){
+        } else if (clicked_btn.hasClass('fa-thumbs-up')){
             action = 'unlike';
+        }
+
+let formData =  new FormData()
+formData.append('idea_id',idea_id)
+formData.append('action', action)
+
+    $.ajax({
+        url: 'news_feed.php',
+        type:  'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        cache: false,
+
+        success: function(data){
+
+        if (action == "like") {
+            clicked_btn.removeClass('fa-thumbs-o-up');
+            clicked_btn.addClass('fa-thumbs-up');
+        } else if(action == "unlike") {
+            clicked_btn.removeClass('fa-thumbs-up');
+            clicked_btn.addClass('fa-thumbs-o-up');
+        }
+
+
+        },
+        error: function(){
+            alert('error')
         }
 
     })
 
-    $.ajax({
-        url: 'news_feed.php'.
-        type:  'post',
-        data: {
-            'action': action,
-            'idea_id': idea_id
-        },
-    })
-
-
+})
 
 })
 
@@ -816,8 +838,8 @@ window.onclick = function(event) {
 
 
 
-                                        <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
-                                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
+                                        <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+                                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
 
 
 <?php 
