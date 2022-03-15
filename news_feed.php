@@ -9,9 +9,21 @@
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon.png">
     <link href="./css/style.css" rel="stylesheet">
+<!-- add font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+<!-- Add css  -->
+    <link href="./css/style.css" rel="stylesheet">
+
+
+<!-- Add script -->
+
+
+<!-- add jquery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" referrerpolicy="no-referrer"></script>
 
     <?php 
+
     include("inc/header.php");
     include_once("inc/autoid.php");
     include_once("inc/connect.php");
@@ -94,6 +106,45 @@ if (isset($_POST['BtnPost'])) {
 }
 
 
+if (isset($_POST['action'])) {
+    $idea_id=$_POST['ideaid'];
+    $action=$_POST['action'];
+    $time=date('Y-m-d H:i:s');
+
+
+    switch ($action) {
+        case 'like':
+            $sql="INSERT INTO tblrating (ideaid,responderid,react_date,rating)
+                    VALUES ('$idea_id','$staffid','$time','$action')
+                    ON DUPLICATE KEY UPDATE rating='like'";
+            break;
+
+        case 'unlike':
+            $sql="INSERT INTO tblrating (ideaid,responderid,react_date,rating)
+                    VALUES ('$idea_id','$staffid','$time','$action')
+                    ON DUPLICATE KEY UPDATE rating='unlike'";
+            break;
+
+        case 'dislike':
+            $sql="DELETE FROM tblrating WHERE responderid='$staffid' AND ideaid='$idea_id'";
+            break;
+
+        case 'undislike':
+            $sql="DELETE FROM tblrating WHERE responderid='$staffid' AND ideaid='$idea_id'";
+            break;
+
+        default:
+            break;
+    }
+    //execute query
+    mysqli_query($connection,$sql);
+    exit();
+
+
+} else {
+        echo "<p>Something went wrong in addding rating!  " . mysqli_error($connection) . "</p>";
+}
+
 
  ?>
 
@@ -101,6 +152,43 @@ if (isset($_POST['BtnPost'])) {
 
 <body>
 
+<script type="text/javascript">
+
+ 
+
+$(document).ready(function(){ 
+
+    $('.like_btn').on('click',function(){
+
+        var idea_id = $(this).data('id');
+        $clicked_btn = $(this);
+
+        if ($clicked_btn.hasClass('fa-thumbs-o-up')) {
+            action = 'like';
+
+        } else if ($clicked_btn.hasClass('fa-thumbs-up')){
+            action = 'unlike';
+        }
+
+    })
+
+    $.ajax({
+        url: 'news_feed.php'.
+        type:  'post',
+        data: {
+            'action': action,
+            'idea_id': idea_id
+        },
+    })
+
+
+
+})
+
+
+     
+
+</script>
     <!--*******************
         Preloader start
     ********************-->
@@ -203,6 +291,7 @@ if (isset($_POST['BtnPost'])) {
         </div> -->
 
                     <?php 
+
                     if(isset($_SESSION["admid"]))
 
                             {   ?>
@@ -282,7 +371,8 @@ if (isset($_POST['BtnPost'])) {
                           </li>
 
 
-                        <?php   } 
+                        <?php   
+                    } 
 
                             else if(isset($_SESSION["qacid"]))
 
@@ -298,7 +388,8 @@ if (isset($_POST['BtnPost'])) {
                             </li>
 
 
-                        <?php   } 
+                        <?php   
+                    } 
     
                             
                             else 
@@ -374,17 +465,39 @@ if (isset($_POST['BtnPost'])) {
                                                         <select name="opCategory" class="form-control" >
 
                                                 <?php 
-
-                                                    $sqll="SELECT * FROM tblcategory";
+                                                   
+                                                    $sqll="SELECT * FROM tblcategory WHERE enddate > now();";
                                                     $que=mysqli_query($connection,$sqll);
+                                                    $now= date('Y-m-d');
+                                                    $enddate=$row['enddate'];
                                                     $countt=mysqli_num_rows($que);
-                                             for ($i=0; $i<$countt; $i++){
+
+
+        if (empty($countt)) {
+   // if category enddate for idea upload is over
+                                            
+                                                    echo "<option value=''>No New Category</option>";
+                                                        
+        }   
+
+        // if enddate is not over
+        elseif (!empty($countt)) {
+                 
+                for ($i=0; $i<$countt; $i++){
                                                     $roww=mysqli_fetch_array($que);
                                                     $cateid=$roww['categoryid'];
                                                     $name=$roww['name'];
-                                                 echo "<option value='$cateid'>$cateid / $name</option>";                                   
-                                            }
+                                                    echo "<option value='$cateid'>$cateid / $name</option>";
 
+                                         
+                                             
+                                           
+                                        
+        }
+    }
+
+
+                                                    
 
 
                                                 ?>
@@ -428,21 +541,165 @@ if (isset($_POST['BtnPost'])) {
 
                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
                                                         <label><h1>Newsfeed</h1></label>
+<style type="text/css">
+/* Dropdown Button */
+.dropbtn {
+  background-color: #132495;
+  border-radius: 5px;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: absolute;
+  right: 10px;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #ddd}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
+
+</style>
+
+<script type="text/javascript">
+    /* When the user clicks on the button, toggle between hiding and showing the dropdown content */
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+</script>                                                        
+<div class="dropdown">
+  <button onclick="myFunction()" class="dropbtn">Filter</button>
+  <div id="myDropdown" class="dropdown-content">
+    <a href="news_feed.php?ft=MP">Most Popular</a>
+    <a href="news_feed.php?ft=MCM">Most Comment</a>
+    <a href="news_feed.php?ft=LI">Latest Idea</a>
+    <a href="news_feed.php?ft=LCM">Latest Comment</a>
+  </div>
+</div>
+                                                        
+
 
 
 <!--           image                                       <img src="images/profile/8.jpg" alt="" class="img-fluid"> -->                                                        
 
     <?php 
 
+
+
             $sqll="SELECT * FROM tbldepartment";
             $que=mysqli_query($connection,$sqll);
             $deprow=mysqli_fetch_array($que);
+                                                $idea_select="SELECT i.*,s.name
+                                            FROM tblidea i,tblstaff s 
+                                            WHERE i.staffid=s.staffid
+                                            ORDER BY i.idea_date DESC
+                                            LIMIT 5";
 
-    $idea_select="SELECT i.*,s.name
-                    FROM tblidea i,tblstaff s 
-                    WHERE i.staffid=s.staffid
-                    ORDER BY i.idea_date 
-                    LIMIT 5";
+    if($_GET['ft']) {
+                
+
+                        switch ($_GET['ft']) {
+                            case 'MP':
+                            
+                            // Count the idea react not yet
+
+                                $idea_select="SELECT i.*,s.name
+                                            FROM tblidea i,tblstaff s 
+                                            WHERE i.staffid=s.staffid
+                                            ORDER BY i.idea_date DESC
+                                            LIMIT 5";
+
+                                    break;
+
+                            case 'MCM':
+
+                            // Count the comments of idea Done
+
+                                $idea_select="SELECT i.*,s.name, c.*, COUNT(*) 
+                                FROM tblidea i, tblcomment c, tblstaff s
+                                WHERE i.ideaid=c.ideaid
+                                AND i.staffid=s.staffid 
+                                GROUP BY c.ideaid HAVING COUNT(*) > 0 
+                                ORDER BY COUNT(*) DESC
+                                LIMIT 5;
+                                            ";
+
+                                    break;  
+
+                            case 'LI':
+
+                            // Latest idea Done
+
+                                $idea_select="SELECT i.*,s.name
+                                            FROM tblidea i,tblstaff s 
+                                            WHERE i.staffid=s.staffid
+                                            ORDER BY i.idea_date DESC
+                                            LIMIT 5";
+                                    break;    
+                            
+                            case 'LCM':
+                            
+                            // latest comment of idea Not
+
+                                $idea_select="SELECT i.*,s.name, c.commentdate
+                                FROM tblidea i, tblcomment c, tblstaff s
+                                WHERE i.ideaid=c.ideaid
+                                AND i.staffid=s.staffid 
+                                GROUP BY c.ideaid 
+                                ORDER BY c.commentdate DESC
+                                LIMIT 5;
+                        ";
+                                    break;    
+                            
+
+                        }
+                }         
+
+    
     $idea_ret=mysqli_query($connection,$idea_select);
     $idea_count=mysqli_num_rows($idea_ret);
 
@@ -455,7 +712,6 @@ if (isset($_POST['BtnPost'])) {
     $postername=$idea_row['name'];
 
     $postdate=$idea_row['idea_date'];
-    $ideaPost=$idea_row['idea_detail'];
     $ideaPost=$idea_row['idea_detail'];
     $ideavisibility=$idea_row['visibility'];
     
@@ -544,11 +800,59 @@ if (isset($_POST['BtnPost'])) {
         a.acolor {
             color: white;
         }                                                            
+
+
+    i.like_btn{
+        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+    }
+
+    i.dislike_btn {
+        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+    }
+
+
 </style>
-                                                       <button class="btn btn-secondary"><a href="idea_details.php?ideaid=<?php echo  $ideaid; ?>" class="mr-4 acolor" title="LINK" >
-                                                        Give react or comment             
+
+
+
+
+                                        <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
+                                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
+
+
+<?php 
+        $finalq=mysqli_query($connection,"SELECT finalenddate
+                                FROM tblcategory c, tblidea i 
+                                WHERE i.ideaid='$ideaid'
+                                AND i.categoryid=c.categoryid
+                                AND c.finalenddate > now();");
+        $finalROW=mysqli_num_rows($finalq);
+        if (empty($finalROW)) {
+
+       echo" <hr>";
+
+
+    }   elseif (!empty($finalROW)) {
+
+?>
+     <button class="btn btn-secondary" id="Btncmt"><a href="idea_details.php?ideaid=<?php echo  $ideaid; ?>" class="mr-4 acolor" title="LINK" >
+                                                        Give comment             
                                                         </a></button>
                                                                       <hr>
+
+<?php 
+        }   // end of elseif
+
+
+?>
+
+
+
+
+
+
+                                       
+                                                  
     <?php 
 
 // Comment Count 
@@ -560,6 +864,7 @@ if (isset($_POST['BtnPost'])) {
 
    // If condition for no comment or multiple comments 
         if (empty($comrow)) {
+
      ?> 
                                                                         <div class="container">
                                                                             <div class="row" style="margin-top: 10px;">
@@ -571,6 +876,7 @@ if (isset($_POST['BtnPost'])) {
                                                                         
                                                                         </div>
     <?php 
+
         }
         else if ($comrow >= '1') {
 

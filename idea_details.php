@@ -28,6 +28,8 @@
     <?php 
     include('inc/header.php');
     include_once("inc/autoid.php");
+        include_once("inc/connect.php");
+
 
 if (!isset($_SESSION['staffid'])) // login first if no session 
 {
@@ -71,12 +73,21 @@ $(document).ready(function(){
     $('.like_btn').on('click',function(){
 
         var idea_id = $(this).data('id');
-        alert(idea_id);
+        $clicked_btn = $(this);
 
-        
+        if ($clicked_btn.hasClass('fa-thumbs-o-up')) {
+            action = 'like';
 
-    })        
-})    
+        } else if ($clicked_btn.hasClass('fa-thumbs-up')){
+            action = 'unlike';
+        }
+
+    })
+
+
+
+})
+     
 
 </script>
 
@@ -300,7 +311,7 @@ $(document).ready(function(){
                             <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
                                         class="icon icon-form"></i><span class="nav-text">Ideas</span></a>
                                 <ul aria-expanded="false">
-                                    <li><a href="./news_feed.php">Newsfeed</a></li>
+                                    <li><a href="./news_feed.php?ft=LI">Newsfeed</a></li>
                           </li>
 
 
@@ -642,12 +653,18 @@ $download_res=mysqli_query($connection,"SELECT *
 ?>                                                                                             
                                                                               
 <form action="#" method="POST" enctype="multipart/form-data">
-<div class="post-input">          
+                                                                            <div class="post-input">          
                             <input type="hidden" name="commentid" value="<?php echo AutoID('tblcomment','commentid','CId-',5);?>">
                             <input type="hidden" name="upideaid" value="<?php echo $ideaid ?>">
                             <input type="hidden" name="commenterid" value="<?php echo $staffid ?>">
+
+<?php
+    
+
+
+?>                            
              
-                                                                                <textarea name="txtarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...." required></textarea>
+                         <textarea name="txtarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...." required></textarea>
                                                                             </div>
                                                                         </div>
                                                                      
