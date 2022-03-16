@@ -52,7 +52,7 @@ if (!isset($_SESSION['staffid'])) // login first if no session
 
  else
  {
-    $staffid="";
+    $sid="";
  }
 }
 
@@ -95,7 +95,7 @@ if (isset($_POST['BtnPost'])) {
         if($result) //True
         {
         echo "<script>window.alert('Idea Successfully added!')</script>";
-        echo "<script>window.location='news_feed.php'</script>";
+        echo "<script>window.location='news_feed.php?ft=LI'</script>";
         }
         else
         {
@@ -109,25 +109,24 @@ if (isset($_POST['BtnPost'])) {
 if (isset($_POST['action'])) {
     $idea_id=$_POST['idea_id'];
     $action=$_POST['action'];
-    $time=date('Y-m-d H:i:s');
     $staffid=$_SESSION['staffid'];
 
 
 
     switch ($action) {
         case 'like':
-            $sql="INSERT INTO tblrating (ideaid,responderid,react_date,rating)
-                    VALUES ('$idea_id','$staffid','$time','$action')
+            $sql="INSERT INTO tblrating (ideaid,responderid,rating)
+                    VALUES ('$idea_id','$staffid','$action')
                     ON DUPLICATE KEY UPDATE rating='like'";
             break;
 
-        case 'unlike':
-            $sql="INSERT INTO tblrating (ideaid,responderid,react_date,rating)
-                    VALUES ('$idea_id','$staffid','$time','$action')
-                    ON DUPLICATE KEY UPDATE rating='unlike'";
+        case 'dislike':
+            $sql="INSERT INTO tblrating (ideaid,responderid,rating)
+                    VALUES ('$idea_id','$staffid','$action')
+                    ON DUPLICATE KEY UPDATE rating='dislike'";
             break;
 
-        case 'dislike':
+        case 'unlike':
             $sql="DELETE FROM tblrating WHERE responderid='$staffid' AND ideaid='$idea_id'";
             break;
 
@@ -140,12 +139,49 @@ if (isset($_POST['action'])) {
     }
     //execute query
     mysqli_query($connection,$sql);
+    // return number of likes
+    echo getRating($idea_id);
     exit();
 
 
 } else {
         echo "<p>Something went wrong in addding rating!  " . mysqli_error($connection) . "</p>";
 }
+
+function getLikes($id)
+{
+  global $connection;
+  $sql = "SELECT COUNT(*) FROM tblrating 
+          WHERE ideaid = $idea_id AND rating='like'";
+  $rs = mysqli_query($connection, $sql);
+  $result = mysqli_fetch_array($rs);
+  return $result[0];
+}
+
+function getRating($id)
+{
+  global $conn;
+  $rating = array();
+
+  $likes_query = "SELECT COUNT(*) FROM rating WHERE ideaid = $idea_id AND rating='like'";
+  $dislikes_query = "SELECT COUNT(*) FROM rating
+                    WHERE ideaid = $idea_id AND rating='dislike'";
+
+  $likes_rs = mysqli_query($connection, $likes_query);
+  $dislikes_rs = mysqli_query($connection, $dislikes_query);
+
+  $likes = mysqli_fetch_array($likes_rs);
+  $dislikes = mysqli_fetch_array($dislikes_rs);
+
+  $rating = [
+    'likes' => $likes[0],
+    'dislikes' => $dislikes[0]
+  ];
+  return json_encode($rating);
+}
+
+
+
 
 
  ?>
@@ -160,50 +196,103 @@ if (isset($_POST['action'])) {
 
 $(document).ready(function(){ 
 
-    $('.like_btn').on('click',function(){
-         
-        var idea_id = $(this).data('id');
+        $('.like_btn').on('click',function(){
+             
+            var idea_id = $(this).data('id');
 
-        clicked_btn = $(this);
+            clicked_btn = $(this);
 
-        if (clicked_btn.hasClass('fa-thumbs-o-up')) {
-            action = 'like';
+            if (clicked_btn.hasClass('fa-thumbs-o-up')) {
+                action = 'like';
 
-        } else if (clicked_btn.hasClass('fa-thumbs-up')){
-            action = 'unlike';
-        }
+            } else if (clicked_btn.hasClass('fa-thumbs-up')){
+                action = 'unlike';
+            }
 
-let formData =  new FormData()
-formData.append('idea_id',idea_id)
-formData.append('action', action)
+    let formData =  new FormData()
+    formData.append('idea_id',idea_id)
+    formData.append('action', action)
 
-    $.ajax({
-        url: 'news_feed.php',
-        type:  'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        cache: false,
+        $.ajax({
+            url: 'news_feed.php',
+            type:  'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            cache: false,
 
-        success: function(data){
+            success: function(data){
 
-        if (action == "like") {
-            clicked_btn.removeClass('fa-thumbs-o-up');
-            clicked_btn.addClass('fa-thumbs-up');
-        } else if(action == "unlike") {
-            clicked_btn.removeClass('fa-thumbs-up');
-            clicked_btn.addClass('fa-thumbs-o-up');
-        }
+            if (action == "like") {
+                clicked_btn.removeClass('fa-thumbs-o-up');
+                clicked_btn.addClass('fa-thumbs-up');
+                alert(action);
+            } else if(action == "unlike") {
+                clicked_btn.removeClass('fa-thumbs-up');
+                clicked_btn.addClass('fa-thumbs-o-up');
+                alert(action);
+            }
 
+            
+        // change button styling of the other button if user is reacting the second time to post
+        clicked_btn.siblings('i.fa-thumbs-down').removeClass('fa-thumbs-down').addClass('fa-thumbs-o-down');
 
-        },
-        error: function(){
-            alert('error')
-        }
+            },
+            error: function(){
+                alert('error')
+            }
+
+        })
 
     })
 
-})
+    $('.dislike_btn').on('click',function(){
+             
+            var idea_id = $(this).data('id');
+
+            clicked_btn = $(this);
+
+            if (clicked_btn.hasClass('fa-thumbs-o-down')) {
+                action = 'dislike';
+
+            } else if (clicked_btn.hasClass('fa-thumbs-down')){
+                action = 'undislike';
+            }
+
+    let formData =  new FormData()
+    formData.append('idea_id',idea_id)
+    formData.append('action', action)
+
+        $.ajax({
+            url: 'news_feed.php',
+            type:  'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            cache: false,
+
+            success: function(data){
+
+            if (action == "dislike") {
+                clicked_btn.removeClass('fa-thumbs-o-down');
+                clicked_btn.addClass('fa-thumbs-down');
+                alert(action);
+            } else if(action == "undislike") {
+                clicked_btn.removeClass('fa-thumbs-down');
+                clicked_btn.addClass('fa-thumbs-o-down');
+                alert(action);
+            }
+                // change button styling of the other button if user is reacting the second time to post
+        clicked_btn.siblings('i.fa-thumbs-up').removeClass('fa-thumbs-up').addClass('fa-thumbs-o-up');
+
+            },
+            error: function(){
+                alert('error')
+            }
+
+        })
+
+    })
 
 })
 
@@ -825,7 +914,7 @@ window.onclick = function(event) {
 
 
     i.like_btn{
-        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+        margin-left: 10px; margin-right: 10px;  font-size: 25px; 
     }
 
     i.dislike_btn {
@@ -835,11 +924,52 @@ window.onclick = function(event) {
 
 </style>
 
+    <?php
+//if liked show 
+    $staffid=$_SESSION['staffid'];
+    $idea_id=$idea_row['ideaid'];
+                $q=mysqli_query($connection,"SELECT * FROM tblrating
+                                            WHERE responderid='$staffid' 
+                                            AND ideaid='$idea_id' AND rating='like'");
+                $r=mysqli_num_rows($q);
+                if (!empty($r)){
+
+    ?>                    
+                        <i class="fa fa-thumbs-up like_btn"  data-id="<?php echo $idea_row['ideaid'] ?>"></i>
 
 
 
-                                        <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
-                                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+    <?php              }elseif (empty($r)) {    ?>
+
+                        <i class="fa fa-thumbs-o-up like_btn"  data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+    <?php            
+                        }
+
+    ?>
+
+
+ <?php
+
+    $staffid=$_SESSION['staffid'];
+    $idea_id=$idea_row['ideaid'];
+                $q=mysqli_query($connection,"SELECT * FROM tblrating
+                                            WHERE responderid='$staffid' 
+                                            AND ideaid='$idea_id' AND rating='dislike'");
+                $r=mysqli_num_rows($q);
+                if (!empty($r)){
+
+    ?>                    
+                        <i class="fa fa-thumbs-down dislike_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+
+
+
+    <?php              }elseif (empty($r)) {    ?>
+
+                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+    <?php            
+                        }
+
+    ?>
 
 
 <?php 
@@ -962,6 +1092,8 @@ window.onclick = function(event) {
 <?php   
 
     } //end of idea count condition
+
+
 ?>
 
 
