@@ -139,8 +139,10 @@ if (isset($_POST['action'])) {
     }
     //execute query
     mysqli_query($connection,$sql);
+
     // return number of likes
-    echo getRating($idea_id);
+    // echo getRating($idea_id);
+
     exit();
 
 
@@ -148,37 +150,47 @@ if (isset($_POST['action'])) {
         echo "<p>Something went wrong in addding rating!  " . mysqli_error($connection) . "</p>";
 }
 
-function getLikes($id)
+function getLikes($idea_id)
 {
   global $connection;
   $sql = "SELECT COUNT(*) FROM tblrating 
-          WHERE ideaid = $idea_id AND rating='like'";
+          WHERE ideaid = '$idea_id' AND rating='like'";
   $rs = mysqli_query($connection, $sql);
   $result = mysqli_fetch_array($rs);
   return $result[0];
 }
 
-function getRating($id)
+function getDislikes($idea_id)
 {
-  global $conn;
-  $rating = array();
-
-  $likes_query = "SELECT COUNT(*) FROM rating WHERE ideaid = $idea_id AND rating='like'";
-  $dislikes_query = "SELECT COUNT(*) FROM rating
-                    WHERE ideaid = $idea_id AND rating='dislike'";
-
-  $likes_rs = mysqli_query($connection, $likes_query);
-  $dislikes_rs = mysqli_query($connection, $dislikes_query);
-
-  $likes = mysqli_fetch_array($likes_rs);
-  $dislikes = mysqli_fetch_array($dislikes_rs);
-
-  $rating = [
-    'likes' => $likes[0],
-    'dislikes' => $dislikes[0]
-  ];
-  return json_encode($rating);
+  global $connection;
+  $sql = "SELECT COUNT(*) FROM tblrating 
+          WHERE ideaid = '$idea_id' AND rating='dislike'";
+  $rs = mysqli_query($connection, $sql);
+  $result = mysqli_fetch_array($rs);
+  return $result[0];
 }
+
+// function getRating($idea_id)
+// {
+//   global $conn;
+//   $rating = array();
+
+//   $likes_query = "SELECT COUNT(*) FROM rating WHERE ideaid = '$idea_id' AND rating='like'";
+//   $dislikes_query = "SELECT COUNT(*) FROM rating
+//                     WHERE ideaid = '$idea_id' AND rating='dislike'";
+
+//   $likes_rs = mysqli_query($connection, $likes_query);
+//   $dislikes_rs = mysqli_query($connection, $dislikes_query);
+
+//   $likes = mysqli_fetch_array($likes_rs);
+//   $dislikes = mysqli_fetch_array($dislikes_rs);
+
+//   $rating = [
+//     'likes' => $likes[0],
+//     'dislikes' => $dislikes[0]
+//   ];
+//   return json_encode($rating);
+// }
 
 
 
@@ -222,16 +234,16 @@ $(document).ready(function(){
             cache: false,
 
             success: function(data){
-
             if (action == "like") {
                 clicked_btn.removeClass('fa-thumbs-o-up');
                 clicked_btn.addClass('fa-thumbs-up');
-                alert(action);
+                window.location.reload();
             } else if(action == "unlike") {
                 clicked_btn.removeClass('fa-thumbs-up');
                 clicked_btn.addClass('fa-thumbs-o-up');
-                alert(action);
+                window.location.reload();
             }
+
 
             
         // change button styling of the other button if user is reacting the second time to post
@@ -276,12 +288,14 @@ $(document).ready(function(){
             if (action == "dislike") {
                 clicked_btn.removeClass('fa-thumbs-o-down');
                 clicked_btn.addClass('fa-thumbs-down');
-                alert(action);
+                window.location.reload();
             } else if(action == "undislike") {
                 clicked_btn.removeClass('fa-thumbs-down');
                 clicked_btn.addClass('fa-thumbs-o-down');
-                alert(action);
+                window.location.reload();
             }
+
+
                 // change button styling of the other button if user is reacting the second time to post
         clicked_btn.siblings('i.fa-thumbs-up').removeClass('fa-thumbs-up').addClass('fa-thumbs-o-up');
 
@@ -293,6 +307,8 @@ $(document).ready(function(){
         })
 
     })
+
+
 
 })
 
@@ -739,11 +755,7 @@ window.onclick = function(event) {
 
     <?php 
 
-
-
-            $sqll="SELECT * FROM tbldepartment";
-            $que=mysqli_query($connection,$sqll);
-            $deprow=mysqli_fetch_array($que);
+            
                                                 $idea_select="SELECT i.*,s.name
                                             FROM tblidea i,tblstaff s 
                                             WHERE i.staffid=s.staffid
@@ -758,10 +770,14 @@ window.onclick = function(event) {
                             
                             // Count the idea react not yet
 
-                                $idea_select="SELECT i.*,s.name
-                                            FROM tblidea i,tblstaff s 
-                                            WHERE i.staffid=s.staffid
-                                            ORDER BY i.idea_date DESC
+                                $idea_select="SELECT i.*,s.name, r.*, COUNT(*) 
+                                            FROM tblidea i, tblrating r, tblstaff s 
+                                            WHERE i.ideaid=r.ideaid 
+                                            AND i.staffid=s.staffid
+                                            AND r.rating='like'
+                                            GROUP BY r.ideaid 
+                                            HAVING COUNT(*) > 0 
+                                            ORDER BY COUNT(*) DESC 
                                             LIMIT 5";
 
                                     break;
@@ -827,6 +843,14 @@ window.onclick = function(event) {
     $ideavisibility=$idea_row['visibility'];
     
     $comres=mysqli_query($connection,"SELECT * FROM tblcomment WHERE ideaid='$ideaid'");
+
+
+
+            $sqll="SELECT d.*, s.departmentid, s.staffid FROM tbldepartment d, tblstaff s
+                WHERE d.departmentid=s.departmentid
+                AND s.staffid='$posterid'";
+            $que=mysqli_query($connection,$sqll);
+            $deprow=mysqli_fetch_array($que);
                                                         
     
 
@@ -843,13 +867,13 @@ window.onclick = function(event) {
 
                                         case "yes":
     ?>
-
+                                                    <div>
                                                         <a class="post-title" > 
                                                             <h3 style="padding-top:10px; "><?php echo $deprow['name'];?> Department</h3>
-                                                            <h4 style="padding-top:5px; padding-bottom:5px;"><?php echo $posterid ;
+                                                            <h4 style="padding-top:10px; padding-bottom:10px;"><b><?php echo $posterid ;
                                                                     echo " - ";
                                                                     echo $postername; 
-                                                                    echo "  posted at  ";
+                                                                    echo " </b> posted at  ";
                                                                     echo $postdate;    
 
                                                       ?> </h4>
@@ -886,7 +910,7 @@ window.onclick = function(event) {
                                                             <style type="text/css">  #textarea{
                                                                 font-size: 20px;
                                                             }</style>
-                                                            <textarea  id="textarea" class="form-control bg-transparent" placeholder=" <?php   echo $ideaPost; ?>" disabled></textarea> 
+                                                            <textarea  style="margin-top:25px; margin-bottom:15px; " id="textarea" class="form-control bg-transparent" placeholder=" <?php   echo $ideaPost; ?>" disabled></textarea> 
                                                                
                                                         </h5>
                                                         <p>
@@ -914,18 +938,45 @@ window.onclick = function(event) {
 
 
     i.like_btn{
-        margin-left: 10px; margin-right: 10px;  font-size: 25px; 
+        margin-left: 10px; margin-right: 4px;  font-size: 30px; 
     }
 
     i.dislike_btn {
-        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+        margin-left: 10px; margin-right: 4px;  font-size: 30px;
     }
+
+    span.likes {
+        color: black;
+        text-decoration: bold;
+        font-size: 17px;
+    }
+
+    span.dislikes {
+        color: black;
+        text-decoration: bold;
+        font-size: 17px;
+
+    }
+
+    hr{
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    hr.posthr{
+        margin-bottom: 40px;
+        margin-top: 30px;
+    }
+
+
 
 
 </style>
 
     <?php
-//if liked show 
+
+//if user liked show blue thumb 
+
     $staffid=$_SESSION['staffid'];
     $idea_id=$idea_row['ideaid'];
                 $q=mysqli_query($connection,"SELECT * FROM tblrating
@@ -946,7 +997,7 @@ window.onclick = function(event) {
                         }
 
     ?>
-
+        <span class="likes"><?php echo getLikes($idea_row['ideaid']); ?></span>
 
  <?php
 
@@ -970,6 +1021,7 @@ window.onclick = function(event) {
                         }
 
     ?>
+        <span class="dislikes"><?php echo getDislikes($idea_row['ideaid']); ?></span>
 
 
 <?php 
@@ -987,7 +1039,7 @@ window.onclick = function(event) {
     }   elseif (!empty($finalROW)) {
 
 ?>
-     <button class="btn btn-secondary" id="Btncmt"><a href="idea_details.php?ideaid=<?php echo  $ideaid; ?>" class="mr-4 acolor" title="LINK" >
+     <button class="btn btn-secondary" style="margin-left: 15px;" id="Btncmt"><a href="idea_details.php?ideaid=<?php echo  $ideaid; ?>" class="mr-4 acolor" title="LINK" >
                                                         Give comment             
                                                         </a></button>
                                                                       <hr>
@@ -1087,7 +1139,8 @@ window.onclick = function(event) {
                                                                    
                                                                          
                                                     </div>
-                                                    <hr>  
+                                                </div>
+                                                    <hr class="posthr">  
 
 <?php   
 
