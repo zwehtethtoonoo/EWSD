@@ -532,20 +532,7 @@ $(document).ready(function(){
 </style>                                      
                                         <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
                                         <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
-                                        
-<?php
-
-//Download function 
-
-$download_res=mysqli_query($connection,"SELECT *
-                                        FROM tblidea
-                                        WHERE '$ideaid'=ideaid;");
-                                $download=mysqli_fetch_array($download_res);
-?>  
-                                                                                <div class="col-5">
-                <p style="align-self: right; text-align: right;"><strong> <a style=" color: black; font-size: 15px; align-self: right; text-align: right;" href="download.php?path=<?php echo $download['file']; ?>">Download file</a></strong></p>
-                                                                     
-                                                                                </div>
+                
                                                                                 
                                                                         <hr>                     
                                                                         <?php 

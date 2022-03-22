@@ -494,7 +494,7 @@ $(document).ready(function(){
                             <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
                                         class="icon icon-form"></i><span class="nav-text">Ideas</span></a>
                                 <ul aria-expanded="false">
-                                    <li><a href="./news_feed.php">Newsfeed</a></li>
+                                    <li><a href="./news_feed.php?ft=LI">Newsfeed</a></li>
                           </li>
 
 
@@ -552,15 +552,10 @@ $(document).ready(function(){
         <div class="content-body">
             <div class="container-fluid">
                 <div class="Hi, welcome back!">
-                    <div class="col-sm-6 p-md-0">
-                        <div class="welcome-text">
-                           
-                        </div>
-                    </div>
                     <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0)">App</a></li>
-                            <li class="breadcrumb-item active"><a href="javascript:void(0)">Profile</a></li>
+                            <li class="breadcrumb-item"><a style="color:darkblue;" href="#">Newsfeed</a></li>
+                            <li class="breadcrumb-item"><a href="staff-profile.php">Profile</a></li>
                         </ol>
                     </div>
                 </div>
@@ -573,14 +568,6 @@ $(document).ready(function(){
                             <div class="card-body">
                                 <div class="profile-tab">
                                     <div class="custom-tab-1">
-                                        <ul class="nav nav-tabs">
-                                            <li class="nav-item"><a href="#my-posts" data-toggle="tab" class="nav-link active show">Posts</a>
-                                            </li>
-                                            <li class="nav-item"><a href="#about-me" data-toggle="tab" class="nav-link">About Me</a>
-                                            </li>
-                                            <li class="nav-item"><a href="#profile-settings" data-toggle="tab" class="nav-link">Setting</a>
-                                            </li>
-                                        </ul>
                                         <div class="tab-content">
                                             <div id="my-posts" class="tab-pane fade active show">
                                                 <div class="my-post-content pt-3">
@@ -649,10 +636,24 @@ $(document).ready(function(){
 
                          <input type="radio" name="rdovisibility" value="yes" checked /> <label class="label-radio">Public </label>
                         <input type="radio"  name="rdovisibility" value="no" /> <label class="label-radio">Anyonymous </label>
-                                                    </div>                                      
+                                                    </div>   
+
                                                      <div class="post-input">
                                                         <input type="file" name="filename1" value="Upload File" required>
                                                     </div>
+
+                                                <div class="form-group row">
+                                                    <label class="col-lg-4 col-form-label"><a
+                                                            >Terms &amp; Conditions</a>
+                                                    </label>
+                                                    <div class="col-lg-8">
+                                                        <label class="css-control css-control-primary css-checkbox" for="val-terms">
+                                                            <input type="checkbox" required class="css-control-input mr-2"
+                                                                id="val-terms" name="val-terms" value="1" >
+                                                            <span class="css-control-indicator"></span> I agree to the
+                                                            Terms  &amp; Conditions</label>
+                                                    </div>
+                                                </div>
                                                         <style type="text/css"> .btnsub {
                                                             margin-bottom:10px ;
                                                         } </style>
