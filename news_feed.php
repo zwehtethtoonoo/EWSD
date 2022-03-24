@@ -11,6 +11,8 @@
     <link href="./css/style.css" rel="stylesheet">
 <!-- add font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="./vendor/datatables/css/jquery.dataTables.min.css" rel="stylesheet">
+
 
 <!-- Add css  -->
     <link href="./css/style.css" rel="stylesheet">
@@ -24,7 +26,7 @@
 
     <?php 
 
-    include("inc/header.php");
+    include("inc/news_feed_header.php");
     include_once("inc/autoid.php");
     include_once("inc/connect.php");
 
@@ -67,17 +69,11 @@ if (isset($_POST['BtnPost'])) {
         $timestamp=date('Y-m-d H:i:s');
         $cate=$_POST['opCategory'];
 
-
- // finding path for filetype 
-
-    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
-    $extension = pathinfo($path, PATHINFO_EXTENSION);
-
         // Copying inserted file to images\ideas
 
         $image1=$_FILES['filename1']['name'];
                 
-         $folder="images/ideas/";
+         $folder="ideas/";
         if ($image1) 
         {
             $filename1=$folder.$image1;
@@ -88,6 +84,10 @@ if (isset($_POST['BtnPost'])) {
             }
         }
 
+ // finding path for filetype 
+
+    $path = 'E:\xampp\htdocs\EWSD\ '.$filename1;
+    $extension = pathinfo($path, PATHINFO_EXTENSION);
       
    
  $result=mysqli_query($connection,"INSERT INTO tblidea (ideaid,idea_detail,staffid,categoryid,idea_date,file,filetype,visibility) VALUES ('$ideaid','$txttextarea','$staffid','$cate','$timestamp','$filename1','$extension','$rdovisibility')");
@@ -248,6 +248,7 @@ $(document).ready(function(){
             
         // change button styling of the other button if user is reacting the second time to post
         clicked_btn.siblings('i.fa-thumbs-down').removeClass('fa-thumbs-down').addClass('fa-thumbs-o-down');
+         
 
             },
             error: function(){
@@ -299,6 +300,7 @@ $(document).ready(function(){
                 // change button styling of the other button if user is reacting the second time to post
         clicked_btn.siblings('i.fa-thumbs-up').removeClass('fa-thumbs-up').addClass('fa-thumbs-o-up');
 
+
             },
             error: function(){
                 alert('error')
@@ -309,9 +311,7 @@ $(document).ready(function(){
     })
 
 
-
 })
-
 
      
 
@@ -339,6 +339,7 @@ $(document).ready(function(){
         <!--**********************************
             Nav header start
         ***********************************-->
+
     
         <!--**********************************
             Header end ti-comment-alt
@@ -568,6 +569,34 @@ $(document).ready(function(){
                             <div class="card-body">
                                 <div class="profile-tab">
                                     <div class="custom-tab-1">
+                                        <ul class="nav nav-tabs">
+<?php
+    
+    if($_GET['ft']) { 
+                
+                switch ($_GET['ft']) {
+                            case 'LI': ?>                                          
+                                            <li class="nav-item"><a href="news_feed.php?ft=LI" class="nav-link active show">Posts</a>
+                                            </li>
+                                            <li class="nav-item"><a href="news_feed.php?ft=MI" class="nav-link">My Posts</a>
+                                            </li>
+<?php 
+                                    break;
+
+                            case 'MI': ?>
+                                            <li class="nav-item"><a href="news_feed.php?ft=LI" class="nav-link ">Posts</a>
+                                            </li>
+                                            <li class="nav-item"><a href="news_feed.php?ft=MI" class="nav-link active show" >My Posts</a>
+                                            </li>                            
+<?php
+                                        break;
+                                    }
+
+                    }        
+
+ ?>                                            
+
+                                        </ul>
                                         <div class="tab-content">
                                             <div id="my-posts" class="tab-pane fade active show">
                                                 <div class="my-post-content pt-3">
@@ -636,22 +665,21 @@ $(document).ready(function(){
 
                          <input type="radio" name="rdovisibility" value="yes" checked /> <label class="label-radio">Public </label>
                         <input type="radio"  name="rdovisibility" value="no" /> <label class="label-radio">Anyonymous </label>
-                                                    </div>   
-
+                                                    </div>                                      
                                                      <div class="post-input">
                                                         <input type="file" name="filename1" value="Upload File" required>
                                                     </div>
 
-                                                <div class="form-group row">
+                                                    <div class="form-group row">
                                                     <label class="col-lg-4 col-form-label"><a
                                                             >Terms &amp; Conditions</a>
                                                     </label>
                                                     <div class="col-lg-8">
                                                         <label class="css-control css-control-primary css-checkbox" for="val-terms">
-                                                            <input type="checkbox" required class="css-control-input mr-2"
-                                                                id="val-terms" name="val-terms" value="1" >
+                                                            <input type="checkbox" class="css-control-input mr-2"
+                                                                id="val-terms" name="val-terms" value="1">
                                                             <span class="css-control-indicator"></span> I agree to the
-                                                            Terms  &amp; Conditions</label>
+                                                            terms</label>
                                                     </div>
                                                 </div>
                                                         <style type="text/css"> .btnsub {
@@ -668,7 +696,21 @@ $(document).ready(function(){
                                                                     <hr>
 
                                                     <div class="profile-uoloaded-post border-bottom-1 pb-5">
-                                                        <label><h1>Newsfeed</h1></label>
+
+<?php if ($_GET['ft']) {
+                switch ($_GET['ft']) {
+                    case 'MI':
+                                                echo "<label><h1>My Posts</h1></label>";        
+                        break;
+                    
+                    default:
+                                                echo "<label><h1>Newsfeed</h1></label>";
+                        break;
+                }
+            } ?>
+
+
+
 <style type="text/css">
 /* Dropdown Button */
 .dropbtn {
@@ -769,7 +811,7 @@ window.onclick = function(event) {
                         switch ($_GET['ft']) {
                             case 'MP':
                             
-                            // Count the idea react not yet
+                            // Count the idea react 
 
                                 $idea_select="SELECT i.*,s.name, r.*, COUNT(*) 
                                             FROM tblidea i, tblrating r, tblstaff s 
@@ -821,7 +863,19 @@ window.onclick = function(event) {
                                 ORDER BY c.commentdate DESC
                                 LIMIT 5;
                         ";
-                                    break;    
+                                    break;
+
+                            case 'MI':
+
+                            // My ideas 
+
+                                $idea_select="SELECT i.*,s.name
+                                            FROM tblidea i,tblstaff s 
+                                            WHERE i.staffid=s.staffid
+                                            AND I.staffid='$staffid'
+                                            ORDER BY i.idea_date DESC
+                                            LIMIT 5";
+                                    break;                                           
                             
 
                         }
@@ -852,6 +906,7 @@ window.onclick = function(event) {
                 AND s.staffid='$posterid'";
             $que=mysqli_query($connection,$sqll);
             $deprow=mysqli_fetch_array($que);
+
                                                         
     
 
@@ -943,7 +998,7 @@ window.onclick = function(event) {
     }
 
     i.dislike_btn {
-        margin-left: 10px; margin-right: 4px;  font-size: 30px;
+        margin-left: 10px; margin-right: 4px;  font-size: 30px; 
     }
 
     span.likes {
@@ -1026,6 +1081,8 @@ window.onclick = function(event) {
 
 
 <?php 
+        //finalclosure no comment hide
+
         $finalq=mysqli_query($connection,"SELECT finalenddate
                                 FROM tblcategory c, tblidea i 
                                 WHERE i.ideaid='$ideaid'
@@ -1095,11 +1152,6 @@ window.onclick = function(event) {
                                         AND c.commenterid=s.staffid;");
                                 $display_cmt_count=mysqli_num_rows($display_cmt);
 
-                                 
-    ?>
-
-                                                                    
-    <?php 
         // Loop for multiple comments
 
             for ($c=0; $c < $display_cmt_count ; $c++) { 

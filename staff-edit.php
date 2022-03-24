@@ -1,50 +1,50 @@
 <?php 
-    include("inc/header.php");
-    include_once("inc/autoid.php");
-    include_once("inc/connect.php");
+    include("inc/header.php");             
 
-if (!isset($_SESSION['staffid'])) 
-{
-    echo "<script>window.alert('Please Login first to continue.')</script>";
-    echo "<script>window.location='login.php'</script>";
-}
+    $staffid=$_GET['staffid'];
+
+    if (isset($_POST['BtnUpd'])) {
+
+        $staffid=$_POST["staffid"];
+        $email=$_POST["email"];
+        $name=$_POST["name"];
+        $username=$_POST["username"];
+        $password=$_POST["password"];
+        
+        $updatesql="UPDATE tblstaff
+                SET email='$email',
+                    name='$name',
+                    username='$username',
+                    password='$password'            
+                WHERE staffid='$staffid'";
+
+            $updatequery=mysqli_query($connection,$updatesql);
 
 
- if(isset($_SESSION['staffid'])) 
-{
-    $staffid=$_SESSION['staffid'];
 
-    $sql="SELECT * FROM tblstaff WHERE staffid='$staffid'";
-    $query=mysqli_query($connection,$sql);
-    $count=mysqli_num_rows($query);
-    $row=mysqli_fetch_array($query);
-    $username=$row['username'];
-
-    if ($count < 1) 
-    {
-        echo "<script>window.alert('ERROR : Staff Profile Not Found.')</script>";
-        echo "<script>window.location='login.php'</script>";
+            if ($updatequery) { //true
+                echo '<script type="text/javascript"> alert ("Staff Profile is successfully edited!!");
+                        window.location.href="staff-profile.php";</script>';
+            }
+            else {
+                echo "<script>alert('Error on editing staff profile!')</script>";
+            }
     }
 
- else
- {
-    $staffid="";
- }
-}
+      $sql="SELECT *
+                FROM tblstaff
+                WHERE staffid='$staffid' ";
+        $query=mysqli_query($connection,$sql);
+        $count= mysqli_num_rows($query);
+        $row=mysqli_fetch_array($query);                                               
+                                                
  ?>
         <!--**********************************
             Content body start
         ***********************************-->
         <div class="content-body">
             <div class="container-fluid">
-                <div class="row page-titles mx-0">
-                    <div class="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="news_feed.php?ft=LI">Newsfeed</a></li>
-                            <li class="breadcrumb-item"><a style="color:darkblue;" href="#">Profile</a></li>
-                        </ol>
-                    </div>
-                </div>
+
                 <!-- row -->
 
 
@@ -65,7 +65,7 @@ if (!isset($_SESSION['staffid']))
                                                     <label class="col-lg-4 col-form-label" for="">Name                    
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="text" class="form-control" name="name" value="<?php echo $row['name']; ?>" disabled />
+                                                        <input type="text" class="form-control" name="name" value="<?php echo $row['name']; ?>" required />
                                                     </div>
                                                 </div>
 
@@ -73,7 +73,7 @@ if (!isset($_SESSION['staffid']))
                                                     <label class="col-lg-4 col-form-label" for="">Staff Email Address
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="email" class="form-control" name="email" value="<?php echo $row['email']; ?>" disabled />
+                                                        <input type="email" class="form-control" name="email" value="<?php echo $row['email']; ?>" required />
                                                     </div>
                                                 </div>
 
@@ -81,19 +81,21 @@ if (!isset($_SESSION['staffid']))
                                                     <label class="col-lg-4 col-form-label" for="">UserName                    
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="text" class="form-control" name="username" value="<?php echo $username ?>" disabled />
+                                                        <input type="text" class="form-control" id="val-username" name="username" value="<?php echo $row['username']; ?>" required />
                                                     </div>
                                                 </div>
+
 
                                                 <div class="form-group row">
                                                     <label class="col-lg-4 col-form-label" for="">Password
                                                     </label>
                                                     <div class="col-lg-6">
-                                                        <input type="password" class="form-control" id="val-password" name="password" value="<?php echo $row['password']; ?>" disabled />
+                                                        <input type="password" class="form-control" id="val-password" name="password" value="<?php echo $row['password']; ?>" required />
                                                     </div>
                                                 </div>
 
-                                                    <button type="submit" class="btn btn-primary"> <a style="color:white;" href="staff-edit.php?staffid=<?php echo  $row['staffid']; ?>" >Edit</a></button>
+                                                    <button type="submit" class="btn btn-primary" name="BtnUpd">Save</button>
+                                                    <button type="reset" class="btn btn-warning"> <a style="color:white;" href="staff-profile.php">Back</a></button>
                                             </div>
                                         </div>
                                     </form>

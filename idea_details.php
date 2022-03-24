@@ -28,7 +28,7 @@
     <?php 
     include('inc/header.php');
     include_once("inc/autoid.php");
-        include_once("inc/connect.php");
+    include_once("inc/connect.php");
 
 
 if (!isset($_SESSION['staffid'])) // login first if no session 
@@ -60,33 +60,147 @@ if (!isset($_SESSION['staffid'])) // login first if no session
 }
 
 
+function getLikes($idea_id)
+{
+  global $connection;
+  $sql = "SELECT COUNT(*) FROM tblrating 
+          WHERE ideaid = '$idea_id' AND rating='like'";
+  $rs = mysqli_query($connection, $sql);
+  $result = mysqli_fetch_array($rs);
+  return $result[0];
+}
+
+function getDislikes($idea_id)
+{
+  global $connection;
+  $sql = "SELECT COUNT(*) FROM tblrating 
+          WHERE ideaid = '$idea_id' AND rating='dislike'";
+  $rs = mysqli_query($connection, $sql);
+  $result = mysqli_fetch_array($rs);
+  return $result[0];
+}
+
+
  ?>
 
 </head>
 
 <body>
 
+
 <script type="text/javascript">
+
+ 
 
 $(document).ready(function(){ 
 
-    $('.like_btn').on('click',function(){
+        $('.like_btn').on('click',function(){
+             
+            var idea_id = $(this).data('id');
 
-        var idea_id = $(this).data('id');
-        $clicked_btn = $(this);
+            clicked_btn = $(this);
 
-        if ($clicked_btn.hasClass('fa-thumbs-o-up')) {
-            action = 'like';
+            if (clicked_btn.hasClass('fa-thumbs-o-up')) {
+                action = 'like';
 
-        } else if ($clicked_btn.hasClass('fa-thumbs-up')){
-            action = 'unlike';
-        }
+            } else if (clicked_btn.hasClass('fa-thumbs-up')){
+                action = 'unlike';
+            }
+
+    let formData =  new FormData()
+    formData.append('idea_id',idea_id)
+    formData.append('action', action)
+
+        $.ajax({
+            url: 'news_feed.php',
+            type:  'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            cache: false,
+
+            success: function(data){
+            if (action == "like") {
+                clicked_btn.removeClass('fa-thumbs-o-up');
+                clicked_btn.addClass('fa-thumbs-up');
+                window.location.reload();
+            } else if(action == "unlike") {
+                clicked_btn.removeClass('fa-thumbs-up');
+                clicked_btn.addClass('fa-thumbs-o-up');
+                window.location.reload();
+            }
+
+
+            
+        // change button styling of the other button if user is reacting the second time to post
+        clicked_btn.siblings('i.fa-thumbs-down').removeClass('fa-thumbs-down').addClass('fa-thumbs-o-down');
+
+            },
+            error: function(){
+                alert('error')
+            }
+
+        })
+
+    })
+
+    $('.dislike_btn').on('click',function(){
+             
+            var idea_id = $(this).data('id');
+
+            clicked_btn = $(this);
+
+            if (clicked_btn.hasClass('fa-thumbs-o-down')) {
+                action = 'dislike';
+
+            } else if (clicked_btn.hasClass('fa-thumbs-down')){
+                action = 'undislike';
+            }
+
+    let formData =  new FormData()
+    formData.append('idea_id',idea_id)
+    formData.append('action', action)
+
+        $.ajax({
+            url: 'news_feed.php',
+            type:  'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            cache: false,
+
+            success: function(data){
+
+            if (action == "dislike") {
+                clicked_btn.removeClass('fa-thumbs-o-down');
+                clicked_btn.addClass('fa-thumbs-down');
+                alert(action);
+                window.location.reload();
+            } else if(action == "undislike") {
+                clicked_btn.removeClass('fa-thumbs-down');
+                clicked_btn.addClass('fa-thumbs-o-down');
+                alert(action);
+                window.location.reload();
+            }
+
+
+                // change button styling of the other button if user is reacting the second time to post
+        clicked_btn.siblings('i.fa-thumbs-up').removeClass('fa-thumbs-up').addClass('fa-thumbs-o-up');
+
+            },
+            error: function(){
+                alert('error')
+            }
+
+        })
 
     })
 
 
 
 })
+
+
      
 
 </script>
@@ -379,7 +493,6 @@ $(document).ready(function(){
     $idea_ret=mysqli_query($connection,$idea_select);
     $idea_count=mysqli_num_rows($idea_ret);
 
-    for($i=0; $i < $idea_count; $i++)  { 
 // poster connection   
     $idea_row=mysqli_fetch_array($idea_ret);
 
@@ -520,19 +633,98 @@ $(document).ready(function(){
                                         WHERE '$ideaid'=ideaid;");
                                 $react=mysqli_fetch_array($res);
 ?>
-                                      <input type="hidden" name="ratingid" value="<?php echo AutoID('tblrating','ratingid','RT-',5);?>">
 <style type="text/css">
+        a.acolor {
+            color: white;
+        }                                                            
+
+
     i.like_btn{
-        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+        margin-left: 10px; margin-right: 4px;  font-size: 30px; 
     }
 
     i.dislike_btn {
-        margin-left: 10px; margin-right: 10px;  font-size: 25px;
+        margin-left: 10px; margin-right: 4px;  font-size: 30px;
     }
-</style>                                      
-                                        <i class="fa fa-thumbs-o-up like_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
-                                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $react['ideaid'] ?>"></i>
-                
+
+    span.likes {
+        color: black;
+        text-decoration: bold;
+        font-size: 17px;
+    }
+
+    span.dislikes {
+        color: black;
+        text-decoration: bold;
+        font-size: 17px;
+
+    }
+
+    hr{
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    hr.posthr{
+        margin-bottom: 40px;
+        margin-top: 30px;
+    }
+
+
+
+
+</style>
+
+    <?php
+
+//if user liked show blue thumb 
+
+    $staffid=$_SESSION['staffid'];
+    $idea_id=$idea_row['ideaid'];
+                $q=mysqli_query($connection,"SELECT * FROM tblrating
+                                            WHERE responderid='$staffid' 
+                                            AND ideaid='$idea_id' AND rating='like'");
+                $r=mysqli_num_rows($q);
+                if (!empty($r)){
+
+    ?>                    
+                        <i class="fa fa-thumbs-up like_btn"  data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+
+
+
+    <?php              }elseif (empty($r)) {    ?>
+
+                        <i class="fa fa-thumbs-o-up like_btn"  data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+    <?php            
+                        }
+
+    ?>
+        <span class="likes"><?php echo getLikes($idea_row['ideaid']); ?></span>
+
+ <?php
+
+    $staffid=$_SESSION['staffid'];
+    $idea_id=$idea_row['ideaid'];
+                $q=mysqli_query($connection,"SELECT * FROM tblrating
+                                            WHERE responderid='$staffid' 
+                                            AND ideaid='$idea_id' AND rating='dislike'");
+                $r=mysqli_num_rows($q);
+                if (!empty($r)){
+
+    ?>                    
+                        <i class="fa fa-thumbs-down dislike_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+
+
+
+    <?php              }elseif (empty($r)) {    ?>
+
+                        <i class="fa fa-thumbs-o-down dislike_btn" data-id="<?php echo $idea_row['ideaid'] ?>"></i>
+    <?php            
+                        }
+
+    ?>
+        <span class="dislikes"><?php echo getDislikes($idea_row['ideaid']); ?></span>
+                                        
                                                                                 
                                                                         <hr>                     
                                                                         <?php 
@@ -638,37 +830,55 @@ $(document).ready(function(){
     }
 
 ?>                                                                                             
-                                                                              
+
+
+<?php 
+        //finalclosure no comment hide
+
+        $finalq=mysqli_query($connection,"SELECT finalenddate
+                                FROM tblcategory c, tblidea i 
+                                WHERE i.ideaid='$ideaid'
+                                AND i.categoryid=c.categoryid
+                                AND c.finalenddate > now();");
+        $finalROW=mysqli_num_rows($finalq);
+        if (empty($finalROW)) {
+
+       echo" ";
+
+
+    }   elseif (!empty($finalROW)) {
+
+?>
+
 <form action="#" method="POST" enctype="multipart/form-data">
-                                                                            <div class="post-input">          
+                                                                <div class="post-input">          
                             <input type="hidden" name="commentid" value="<?php echo AutoID('tblcomment','commentid','CId-',5);?>">
                             <input type="hidden" name="upideaid" value="<?php echo $ideaid ?>">
                             <input type="hidden" name="commenterid" value="<?php echo $staffid ?>">
-
-<?php
-    
-
-
-?>                            
              
                          <textarea name="txtarea" id="textarea" cols="30" rows="5" class="form-control bg-transparent" placeholder="Please type what you want...." required></textarea>
-                                                                            </div>
-                                                                        </div>
+                                                                </div>
+                                                            </div>
                                                                      
 
-                                                                        <div class="col-4" style="margin-top: 12px;">
+                                                            <div class="col-4" style="margin-top: 12px;">
                                                     <input class="btn btn-primary" type="submit" value="Add Comment" name="BtnPost">
 
-                                                                        </div>
-                                                                    </div>
+                                                             </div>
+
+                                                                      <hr>
+
+<?php 
+        }   // end of elseif
+
+
+?>
+                                                                              
+
+                                                        </div>
 
                                                     </div>
                                                     <hr>  
-
-<?php   
-
-    } //end of idea count condition
-?>
 
 
                                                     </div>
